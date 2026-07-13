@@ -1,4 +1,4 @@
-package ru.yandex.practicum.template;
+package ru.yandex.practicum.accounts;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

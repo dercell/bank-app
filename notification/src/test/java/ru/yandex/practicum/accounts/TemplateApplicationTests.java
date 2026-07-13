@@ -1,4 +1,4 @@
-package ru.yandex.practicum.template;
+package ru.yandex.practicum.accounts;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

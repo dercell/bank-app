@@ -6,7 +6,6 @@
 		<groupId>ru.yandex.practicum</groupId>
 		<artifactId>bank-app</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
-		<relativePath/>
 	</parent>
 	<artifactId>front</artifactId>
 

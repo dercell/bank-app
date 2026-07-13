@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+#  consul-server:
+#    image: consul:1.15.4
+#    container_name: consul-server
+#    restart: always
+#    ports:
+#      - "8500:8500"
+#    volumes:
+#      - ./common/consul/data:/consul/data
+#      - ./common/consul/config:/consul/config
+
+  postgres:
+    image: postgres:15.1
+    container_name: bank_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: bank_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./common/db/:/docker-entrypoint-initdb.d
+
+volumes:
+  postgres_data:
