@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="3" author="sergey.kolotev">
+        <preConditions onFail="WARN">
+            <not>
+                <columnExists tableName="accounts" columnName="modified_dttm"/>
+            </not>
+        </preConditions>
+        <dropColumn tableName="accounts" columnName="modified_dttm"/>
+        <rollback>
+            <addColumn tableName="accounts">
+                <column name="modified_dttm" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            </addColumn>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>
