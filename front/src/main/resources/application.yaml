@@ -1,6 +1,8 @@
 spring:
   application:
     name: front
+  config:
+    import: "consul:"
   cloud:
     consul:
       host: localhost
@@ -8,9 +10,14 @@ spring:
       discovery:
         service-name: front
       config:
-        enabled: false
-        prefix: config
+        enabled: true
+        watch:
+          delay: 3000
+          enabled: true
+          wait-time: 5
         defaultContext: application
+        data-key: data
+        format: yaml
 server:
   port: 8083
 
@@ -18,12 +25,11 @@ management:
   endpoints:
     web:
       exposure:
-        include: health, info
+        include: health, info, refresh
   endpoint:
     health:
       show-details: always
 
-custom:
-  baseUrl:
-    account: ${ACCOUNT_BASE_URL:http://localhost:8081}
-#    account: ${ACCOUNT_BASE_URL:http://account:8081}
+#custom:
+#  baseUrl:
+#    accounts: ${ACCOUNT_BASE_URL:http://accounts}

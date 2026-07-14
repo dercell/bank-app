@@ -1,6 +1,8 @@
 package ru.yandex.practicum.mybankfront.client;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -12,8 +14,10 @@ public class AccountClient {
 
     private final WebClient webClient;
 
-    public AccountClient(@Value("${custom.baseUrl.account}") String baseUrl) {
-        webClient = WebClient.builder()
+    public AccountClient
+            (@Qualifier("loadBalancedWebClientBuilder") WebClient.Builder builder,
+             @Value("${custom.baseUrl.accounts}") String baseUrl) {
+        webClient = builder
                 .baseUrl(baseUrl).build();
     }
 

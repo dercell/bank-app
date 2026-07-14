@@ -1,33 +1,29 @@
 spring:
   application:
     name: accounts
+  config:
+    import: "consul:"
   cloud:
     consul:
-      host: localhost          # Адрес Consul (по умолчанию localhost)
-      port: 8500               # Порт Consul (8500 по умолчанию)
+      host: localhost
+      port: 8500
       discovery:
-        service-name: accounts  # Необязательно, по умолчанию берётся spring.application.name
+        service-name: accounts
       config:
-        enabled: false            # Включаем Consul Config для внешней конфигурации
-        prefix: config           # Префикс в KV-хранилище Consul (по умолчанию "config")
-        defaultContext: application  # Контекст по умолчанию
-  datasource:
-    driver-class-name: org.postgresql.Driver
-    username: ${ACC_DB_USER:acc_admin}
-    password: ${ACC_DB_PASSWORD:acc_admin}
-    url: jdbc:postgresql://${ACC_DB_HOST:host.docker.internal}:${ACC_DB_PORT:5432}/${ACC_DB_NAME:bank_db}?currentSchema=${ACC_SCHEMA:accounts}
-  liquibase:
-    change-log: classpath:/db/changelog/db.changelog-master.xml
-    url: jdbc:postgresql://${ACC_DB_HOST:host.docker.internal}:${ACC_DB_PORT:5432}/${ACC_DB_NAME:bank_db}
-    user: ${ACC_DB_USER:acc_admin}
-    password: ${ACC_DB_PASSWORD:acc_admin}
-    default-schema: ${ACC_SCHEMA:accounts}
+        watch:
+          delay: 3000
+          enabled: true
+          wait-time: 5
+        enabled: true
+        defaultContext: application
+        data-key: data
+        format: yaml
 
 management:
   endpoints:
     web:
       exposure:
-        include: health, info
+        include: health, info, refresh
   endpoint:
     health:
       show-details: always
