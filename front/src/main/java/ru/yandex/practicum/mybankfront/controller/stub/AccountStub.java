@@ -4,7 +4,7 @@ import jakarta.annotation.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestParam;
-import ru.yandex.practicum.mybankfront.controller.dto.AccountDto;
+import ru.yandex.practicum.mybankfront.controller.dto.AccountStubDto;
 import ru.yandex.practicum.mybankfront.controller.dto.CashAction;
 
 import java.time.LocalDate;
@@ -23,15 +23,15 @@ public class AccountStub {
     private LocalDate birthdate = LocalDate.of(2001, 1, 1);
     private int sum = 100;
 
-    private final List<AccountDto> accounts = List.of(
-            new AccountDto("petrov", "Петров Петр"),
-            new AccountDto("sidorov", "Сидоров Сидор")
+    private final List<AccountStubDto> accounts = List.of(
+            new AccountStubDto("petrov", "Петров Петр"),
+            new AccountStubDto("sidorov", "Сидоров Сидор")
     );
 
     public String getByLogin(String login) {
         return accounts.stream()
                 .filter(account -> account.login().equals(login))
-                .map(AccountDto::name)
+                .map(AccountStubDto::name)
                 .findFirst()
                 .get();
     }
