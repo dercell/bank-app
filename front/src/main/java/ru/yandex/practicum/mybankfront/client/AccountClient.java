@@ -16,7 +16,7 @@ public class AccountClient {
 
     public AccountClient
             (@Qualifier("loadBalancedWebClientBuilder") WebClient.Builder builder,
-             @Value("${custom.baseUrl.accounts}") String baseUrl) {
+             @Value("${custom.baseUrl.api-gateway}") String baseUrl) {
         webClient = builder
                 .baseUrl(baseUrl).build();
     }
