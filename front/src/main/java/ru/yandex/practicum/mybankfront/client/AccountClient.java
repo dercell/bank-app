@@ -24,7 +24,7 @@ public class AccountClient {
     public AccountInfoDto getMyAccount() {
         try {
             AccountInfoDto myAcc = webClient.get()
-                    .uri("/myAccount")
+                    .uri("/accounts/info")
                     .retrieve()
                     .bodyToMono(AccountInfoDto.class)
                     .block();
