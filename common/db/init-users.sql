@@ -7,3 +7,4 @@ GRANT ALL PRIVILEGES ON SCHEMA accounts TO acc_admin;
 GRANT ALL PRIVILEGES ON SCHEMA cash TO cash_admin;
 GRANT ALL PRIVILEGES ON SCHEMA notification TO notification_admin;
 GRANT ALL PRIVILEGES ON SCHEMA transfer TO transfer_admin;
+GRANT ALL PRIVILEGES ON SCHEMA keycloak TO keycloak;
