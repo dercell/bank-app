@@ -36,6 +36,7 @@ public class JwtTokenRelayGatewayFilterFactory extends AbstractGatewayFilterFact
                         .flatMap(token -> chain.filter(addToken(exchange, token)));
     }
 
+
     /**
      * Пытаемся достать токен:
      * 1) сначала из SecurityContext (если Gateway выступает как Resource Server),

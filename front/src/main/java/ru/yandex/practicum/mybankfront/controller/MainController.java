@@ -1,6 +1,8 @@
 package ru.yandex.practicum.mybankfront.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,9 +14,7 @@ import ru.yandex.practicum.mybankfront.controller.stub.AccountStub;
 import ru.yandex.practicum.mybankfront.service.AccountService;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 
-import static java.awt.SystemColor.info;
 
 /**
  * Контроллер main.html.
@@ -63,13 +63,12 @@ public class MainController {
      * 3. Текущего пользователя можно получить из контекста Security
      */
     @GetMapping("/account")
-    public String getAccount(Model model) {
-        AccountInfoDto acc = accountService.getMyAcc();
+    public String getAccount(Model model,
+                             @AuthenticationPrincipal OidcUser oidcUser) {
 
-        model.addAttribute("name", acc.getCurAccount().getUsername());
-        model.addAttribute("birthdate", acc.getCurAccount().getBirthDate().format(DateTimeFormatter.ISO_DATE));
-        model.addAttribute("sum", acc.getCurAccount().getBalance());
-        model.addAttribute("accounts", acc.getAccounts());
+        String login = oidcUser.getName();
+        AccountInfoDto acc = accountService.getAccByLogin(login);
+        AccountService.fillModel(model, acc);
 
         return "main";
     }
@@ -89,11 +88,13 @@ public class MainController {
     public String editAccount(
             Model model,
             @RequestParam("name") String name,
-            @RequestParam("birthdate") LocalDate birthdate
+            @RequestParam("birthdate") LocalDate birthdate,
+            @AuthenticationPrincipal OidcUser oidcUser
     ) {
-        // TODO: Заменить на то, что описано в комментарии к методу
-        accountStub.setNameAndBirthdate(name, birthdate);
-        accountStub.fillModel(model, null, null);
+
+        String login = oidcUser.getName();
+        AccountInfoDto acc = accountService.updateAccount(login, name, birthdate);
+        AccountService.fillModel(model, acc);
 
         return "main";
     }
@@ -143,4 +144,6 @@ public class MainController {
 
         return "main";
     }
+
+
 }

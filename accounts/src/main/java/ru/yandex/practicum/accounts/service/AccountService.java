@@ -21,7 +21,8 @@ public class AccountService {
     private AccountRepository accountRepository;
 
     public Account getAccountByLogin(String login) {
-        return accountRepository.getAccountByLogin(login).orElseThrow(() -> new IllegalArgumentException("User does not exist!"));
+        return accountRepository.getAccountByLogin(login)
+                .orElse(Account.builder().login(login).build());
     }
 
     public AccountDto getAccountInfo(String login) {
@@ -35,17 +36,31 @@ public class AccountService {
                 otherAccs.add(new AccountStripped(acc.getLogin(), acc.getUsername()));
             }
         }
+        if (accInfo.getCurAccount() == null) {
+            Account newAcc = Account.builder().login(login).build();
+            Account savedAcc = accountRepository.save(newAcc);
+            accInfo.setCurAccount(savedAcc);
+        }
         accInfo.setAccounts(otherAccs);
         return accInfo;
     }
 
-    public Account updateAccount(String login, String name, LocalDate bdate) {
+    public AccountDto updateAccount(String login, String name, LocalDate bdate) {
         Account currentUser = getAccountByLogin(login);
+
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("Имя не может быть пустым");
+        }
+
+        if (LocalDate.now().minusYears(18L).isBefore(bdate)) {
+            throw new IllegalArgumentException("Возраст должен быть больше 18 лет");
+        }
 
         currentUser.setUsername(name);
         currentUser.setBirthDate(bdate);
 
-        return accountRepository.save(currentUser);
+        accountRepository.save(currentUser);
+        return getAccountInfo(login);
 
     }
 
@@ -77,5 +92,6 @@ public class AccountService {
         accountRepository.save(curAccount);
         return msg;
     }
+
 
 }

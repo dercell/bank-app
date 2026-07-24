@@ -1,34 +1,34 @@
 package ru.yandex.practicum.accounts.controller;
 
 import lombok.AllArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.core.oidc.user.OidcUser;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import ru.yandex.practicum.accounts.model.Account;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.accounts.model.AccountDto;
 import ru.yandex.practicum.accounts.service.AccountService;
 
+import java.time.LocalDate;
+
 @RestController
 @AllArgsConstructor
-@RequestMapping("/accounts")
+@RequestMapping("/accounts/info/{login}")
 public class AccountController {
 
     private AccountService accountService;
 
-    @GetMapping("/info")
-    public AccountDto getMyAccount(Authentication authentication) {
+    @GetMapping
+    @PreAuthorize("hasRole('USER')")
+    public AccountDto getAccountByLogin(@PathVariable("login") String login) {
 
-        JwtAuthenticationToken token = (JwtAuthenticationToken) authentication;
-        Jwt jwt = token.getToken();
-        String username = jwt.getClaim("preferred_username");
-
-
-        return accountService.getAccountInfo(username);
+        return accountService.getAccountInfo(login);
     }
+
+    @PostMapping
+    @PreAuthorize("hasRole('USER') && hasAuthority('account.write')")
+    public AccountDto updateAccount(@PathVariable("login") String login,
+                                    @RequestParam("username") String name,
+                                    @RequestParam("birthdate") LocalDate birthdate) {
+            return accountService.updateAccount(login, name, birthdate);
+    }
+
 
 }
