@@ -8,6 +8,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import ru.yandex.practicum.mybankfront.controller.dto.AccountDto;
 import ru.yandex.practicum.mybankfront.controller.dto.AccountInfoDto;
 import ru.yandex.practicum.mybankfront.controller.dto.CashAction;
@@ -17,6 +18,7 @@ import ru.yandex.practicum.mybankfront.service.CashService;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Optional;
 
 
@@ -75,7 +77,7 @@ public class MainController {
 
         String login = oidcUser.getName();
         AccountInfoDto acc = accountService.getAccByLogin(login);
-        fillModel(model, acc, null);
+        fillModel(model, acc, null, null);
 
         return "main";
     }
@@ -101,7 +103,7 @@ public class MainController {
 
         String login = oidcUser.getName();
         AccountInfoDto acc = accountService.updateAccount(login, name, birthdate);
-        fillModel(model, acc, "Пользователь изменен");
+        fillModel(model, acc, "Пользователь изменен", null);
 
         return "main";
     }
@@ -124,10 +126,21 @@ public class MainController {
             @RequestParam("action") CashAction action,
             @AuthenticationPrincipal OidcUser oidcUser
     ) {
+        String info = null;
+        List<String> error = null;
         String login = oidcUser.getName();
-        cashService.editCash(login, action, value);
-        AccountInfoDto acc = accountService.getAccByLogin(login);
-        fillModel(model, acc, action == CashAction.GET ? "Снято %d руб".formatted(value) : "Положено %d руб".formatted(value));
+        try {
+            cashService.editCash(login, action, value);
+            info = action == CashAction.GET ? "Снято %d руб".formatted(value) : "Положено %d руб".formatted(value);
+        } catch (WebClientResponseException wcre) {
+            error = List.of(wcre.getResponseBodyAsString());
+        } catch (Exception ex) {
+            error = List.of(ex.getMessage());
+        } finally {
+            AccountInfoDto acc = accountService.getAccByLogin(login);
+            fillModel(model, acc, info, error);
+        }
+
         return "main";
     }
 
@@ -154,7 +167,7 @@ public class MainController {
         return "main";
     }
 
-    private static void fillModel(Model model, AccountInfoDto dto, String info) {
+    private static void fillModel(Model model, AccountInfoDto dto, String info, List<String> error) {
         String name = Optional.of(dto.getCurAccount()).map(AccountDto::getUsername).orElse(null);
         String birthDate = Optional.of(dto.getCurAccount()).map(AccountDto::getBirthDate)
                 .map(bdate -> bdate.format(DateTimeFormatter.ISO_DATE)).orElse(null);
@@ -164,6 +177,7 @@ public class MainController {
         model.addAttribute("sum", dto.getCurAccount().getBalance());
         model.addAttribute("accounts", dto.getAccounts());
         model.addAttribute("info", info);
+        model.addAttribute("errors", error);
     }
 
 

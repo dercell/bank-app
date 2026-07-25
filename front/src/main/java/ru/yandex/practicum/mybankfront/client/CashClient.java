@@ -28,8 +28,12 @@ public class CashClient {
                     .toBodilessEntity()
                     .block();
         } catch (WebClientResponseException e) {
-            log.error("Error in CashClient chargeSum: {}", e.getMessage(), e);
+            log.error("WebClientResponseException in CashClient chargeSum: {}", e.getMessage(), e);
             throw e;
+        }catch (Exception ex) {
+            log.error("Exception in CashClient chargeSum: {}", ex.getMessage(), ex);
+            throw ex;
         }
+
     }
 }

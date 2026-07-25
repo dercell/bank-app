@@ -1,9 +1,10 @@
-package ru.yandex.practicum.accounts.controller;
+package ru.yandex.practicum.cash.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.accounts.service.CashService;
+import ru.yandex.practicum.cash.service.CashService;
 
 
 @Slf4j
@@ -18,6 +19,7 @@ public class CashController {
     }
 
     @PutMapping("/{login}")
+    @PreAuthorize("hasRole('USER') && hasAuthority('cash.write')")
     public ResponseEntity<Void> chargeSum(
             @PathVariable("login") String login,
             @RequestParam("action") String action,

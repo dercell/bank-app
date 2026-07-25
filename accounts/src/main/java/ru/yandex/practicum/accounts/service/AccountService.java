@@ -79,12 +79,12 @@ public class AccountService {
     public void chargeBalance(String login, String action, long sum) {
         Account curAccount = getAccountByLogin(login);
         String msg;
-        if (action.equals(CashAction.GET.toString()) && sum < curAccount.getBalance()) {
+        if (action.equals(CashAction.GET.toString()) && sum > curAccount.getBalance()) {
             throw new NotEnoughMoneyException("Недостаточно средств на счету");
         }
 
         if (action.equals(CashAction.GET.toString())) {
-            curAccount.setBalance(sum - curAccount.getBalance());
+            curAccount.setBalance(curAccount.getBalance() - sum);
             msg = "Снято %d руб".formatted(sum);
         } else {
             curAccount.setBalance(sum + curAccount.getBalance());

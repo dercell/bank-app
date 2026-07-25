@@ -1,4 +1,4 @@
-package ru.yandex.practicum.accounts.config;
+package ru.yandex.practicum.cash.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;

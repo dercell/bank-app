@@ -1,7 +1,7 @@
-package ru.yandex.practicum.accounts.service;
+package ru.yandex.practicum.cash.service;
 
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.accounts.client.AccountClient;
+import ru.yandex.practicum.cash.client.AccountClient;
 
 @Service
 public class CashService {
