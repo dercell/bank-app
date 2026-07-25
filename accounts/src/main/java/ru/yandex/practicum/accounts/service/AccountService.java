@@ -1,6 +1,7 @@
 package ru.yandex.practicum.accounts.service;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.accounts.exceptions.NotEnoughMoneyException;
@@ -14,6 +15,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 public class AccountService {
@@ -21,8 +23,7 @@ public class AccountService {
     private AccountRepository accountRepository;
 
     public Account getAccountByLogin(String login) {
-        return accountRepository.getAccountByLogin(login)
-                .orElse(Account.builder().login(login).build());
+        return accountRepository.getAccountByLogin(login).orElse(Account.builder().login(login).build());
     }
 
     public AccountDto getAccountInfo(String login) {
@@ -37,7 +38,7 @@ public class AccountService {
             }
         }
         if (accInfo.getCurAccount() == null) {
-            Account newAcc = Account.builder().login(login).build();
+            Account newAcc = Account.builder().login(login).balance(0L).build();
             Account savedAcc = accountRepository.save(newAcc);
             accInfo.setCurAccount(savedAcc);
         }
@@ -75,7 +76,7 @@ public class AccountService {
         accountRepository.saveAll(List.of(from, to));
     }
 
-    public String chargeBalance(String login, String action, long sum) {
+    public void chargeBalance(String login, String action, long sum) {
         Account curAccount = getAccountByLogin(login);
         String msg;
         if (action.equals(CashAction.GET.toString()) && sum < curAccount.getBalance()) {
@@ -90,7 +91,7 @@ public class AccountService {
             msg = "Положено %d руб".formatted(curAccount.getBalance());
         }
         accountRepository.save(curAccount);
-        return msg;
+        log.info(msg);
     }
 
 

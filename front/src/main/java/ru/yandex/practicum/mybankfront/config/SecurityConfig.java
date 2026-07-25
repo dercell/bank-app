@@ -27,13 +27,10 @@ public class SecurityConfig {
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                         .ignoringRequestMatchers("/actuator/**")
                 )
-                //.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth ->
                         auth.requestMatchers("/", "/actuator/**", "/css/**").permitAll()
                                 .anyRequest().authenticated())
                 .oauth2Login(Customizer.withDefaults())
-//                .oauth2ResourceServer(oauth2 ->
-//                        oauth2.jwt(Customizer.withDefaults()))
                 .logout(logout -> logout
                         .logoutSuccessHandler(logoutSuccessHandler())
                         .invalidateHttpSession(true)

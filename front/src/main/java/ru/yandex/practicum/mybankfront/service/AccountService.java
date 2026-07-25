@@ -25,15 +25,4 @@ public class AccountService {
         return accountClient.updateAccount(login, username, birthdate);
     }
 
-    public static void fillModel(Model model, AccountInfoDto dto) {
-        String name = Optional.of(dto.getCurAccount()).map(AccountDto::getUsername).orElse(null);
-        String birthDate = Optional.of(dto.getCurAccount()).map(AccountDto::getBirthDate)
-                .map(bdate -> bdate.format(DateTimeFormatter.ISO_DATE)).orElse(null);
-
-        model.addAttribute("name", name);
-        model.addAttribute("birthdate", birthDate);
-        model.addAttribute("sum", dto.getCurAccount().getBalance());
-        model.addAttribute("accounts", dto.getAccounts());
-    }
-
 }

@@ -8,12 +8,16 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import ru.yandex.practicum.mybankfront.controller.dto.AccountDto;
 import ru.yandex.practicum.mybankfront.controller.dto.AccountInfoDto;
 import ru.yandex.practicum.mybankfront.controller.dto.CashAction;
 import ru.yandex.practicum.mybankfront.controller.stub.AccountStub;
 import ru.yandex.practicum.mybankfront.service.AccountService;
+import ru.yandex.practicum.mybankfront.service.CashService;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 
 
 /**
@@ -46,6 +50,9 @@ public class MainController {
     @Autowired
     private AccountService accountService;
 
+    @Autowired
+    private CashService cashService;
+
     /**
      * GET /.
      * Редирект на GET /account
@@ -68,7 +75,7 @@ public class MainController {
 
         String login = oidcUser.getName();
         AccountInfoDto acc = accountService.getAccByLogin(login);
-        AccountService.fillModel(model, acc);
+        fillModel(model, acc, null);
 
         return "main";
     }
@@ -94,7 +101,7 @@ public class MainController {
 
         String login = oidcUser.getName();
         AccountInfoDto acc = accountService.updateAccount(login, name, birthdate);
-        AccountService.fillModel(model, acc);
+        fillModel(model, acc, "Пользователь изменен");
 
         return "main";
     }
@@ -114,11 +121,13 @@ public class MainController {
     public String editCash(
             Model model,
             @RequestParam("value") int value,
-            @RequestParam("action") CashAction action
+            @RequestParam("action") CashAction action,
+            @AuthenticationPrincipal OidcUser oidcUser
     ) {
-        // TODO: Заменить на то, что описано в комментарии к методу
-        accountStub.editCash(model, value, action);
-
+        String login = oidcUser.getName();
+        cashService.editCash(login, action, value);
+        AccountInfoDto acc = accountService.getAccByLogin(login);
+        fillModel(model, acc, action == CashAction.GET ? "Снято %d руб".formatted(value) : "Положено %d руб".formatted(value));
         return "main";
     }
 
@@ -143,6 +152,18 @@ public class MainController {
         accountStub.transfer(model, value, login);
 
         return "main";
+    }
+
+    private static void fillModel(Model model, AccountInfoDto dto, String info) {
+        String name = Optional.of(dto.getCurAccount()).map(AccountDto::getUsername).orElse(null);
+        String birthDate = Optional.of(dto.getCurAccount()).map(AccountDto::getBirthDate)
+                .map(bdate -> bdate.format(DateTimeFormatter.ISO_DATE)).orElse(null);
+
+        model.addAttribute("name", name);
+        model.addAttribute("birthdate", birthDate);
+        model.addAttribute("sum", dto.getCurAccount().getBalance());
+        model.addAttribute("accounts", dto.getAccounts());
+        model.addAttribute("info", info);
     }
 
 

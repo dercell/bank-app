@@ -16,11 +16,8 @@ public class AccountClient {
 
     private final WebClient webClient;
 
-    public AccountClient
-            (@Qualifier("loadBalancedWebClientBuilder") WebClient.Builder builder,
-             @Value("${custom.baseUrl.api-gateway}") String baseUrl) {
-        webClient = builder
-                .baseUrl(baseUrl).build();
+    public AccountClient(WebClient webClient) {
+        this.webClient = webClient;
     }
 
     public AccountInfoDto getAccByLogin(String login) {

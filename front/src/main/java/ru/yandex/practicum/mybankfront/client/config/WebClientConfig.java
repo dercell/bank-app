@@ -1,5 +1,6 @@
 package ru.yandex.practicum.mybankfront.client.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,6 +27,12 @@ public class WebClientConfig {
     @LoadBalanced
     public WebClient.Builder loadBalancedWebClientBuilder() {
         return WebClient.builder().filter(addAccessTokenHeader());
+    }
+
+    @Bean
+    public WebClient prepareWebClient(WebClient.Builder loadBalancedWebClientBuilder,
+                                      @Value("${custom.baseUrl.api-gateway}") String baseUrl) {
+        return loadBalancedWebClientBuilder.filter(addAccessTokenHeader()).baseUrl(baseUrl).build();
     }
 
     private ExchangeFilterFunction addAccessTokenHeader() {
