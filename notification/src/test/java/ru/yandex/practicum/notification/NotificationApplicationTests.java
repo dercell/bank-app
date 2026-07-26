@@ -1,10 +1,10 @@
-package ru.yandex.practicum.accounts;
+package ru.yandex.practicum.notification;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class TemplateApplicationTests {
+class NotificationApplicationTests {
 
 	@Test
 	void contextLoads() {

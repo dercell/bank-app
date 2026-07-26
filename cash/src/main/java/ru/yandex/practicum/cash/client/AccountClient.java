@@ -15,19 +15,14 @@ public class AccountClient {
     }
 
     public void chargeBalance(String login, String action, int sum) {
-        try {
-            webClient.put().uri(uriBuilder -> uriBuilder
-                            .path("/accounts/charge/{login}")
-                            .queryParam("action", action)
-                            .queryParam("sum", sum)
-                            .build(login))
-                    .retrieve()
-                    .toBodilessEntity()
-                    .block();
-        } catch (Exception error) {
-            log.error("Error while getting current user: {}", error.getMessage(), error);
-            throw error;
-        }
+        webClient.put().uri(uriBuilder -> uriBuilder
+                        .path("/accounts/charge/{login}")
+                        .queryParam("action", action)
+                        .queryParam("sum", sum)
+                        .build(login))
+                .retrieve()
+                .toBodilessEntity()
+                .block();
     }
 
 }

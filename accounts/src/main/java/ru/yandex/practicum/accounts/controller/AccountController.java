@@ -5,7 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.accounts.model.AccountDto;
-import ru.yandex.practicum.accounts.service.AccountService;
+import ru.yandex.practicum.accounts.service.AccountsService;
 
 import java.time.LocalDate;
 
@@ -14,7 +14,7 @@ import java.time.LocalDate;
 @RequestMapping("/accounts")
 public class AccountController {
 
-    private AccountService accountService;
+    private AccountsService accountService;
 
     @GetMapping("/info/{login}")
     @PreAuthorize("hasRole('USER')")

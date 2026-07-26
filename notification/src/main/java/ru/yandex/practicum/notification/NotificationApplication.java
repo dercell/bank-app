@@ -1,4 +1,4 @@
-package ru.yandex.practicum.accounts;
+package ru.yandex.practicum.notification;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

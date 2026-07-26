@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.yandex.practicum.accounts.client.NotificationClient;
 import ru.yandex.practicum.accounts.exceptions.NotEnoughMoneyException;
 import ru.yandex.practicum.accounts.model.Account;
 import ru.yandex.practicum.accounts.model.AccountDto;
@@ -18,9 +19,10 @@ import java.util.List;
 @Slf4j
 @Service
 @AllArgsConstructor
-public class AccountService {
+public class AccountsService {
 
-    private AccountRepository accountRepository;
+    private final AccountRepository accountRepository;
+    private final NotificationClient notificationClient;
 
     public Account getAccountByLogin(String login) {
         return accountRepository.getAccountByLogin(login).orElse(Account.builder().login(login).build());
@@ -61,6 +63,7 @@ public class AccountService {
         currentUser.setBirthDate(bdate);
 
         accountRepository.save(currentUser);
+        notificationClient.sendNotification("Профиль %s обновлен".formatted(login));
         return getAccountInfo(login);
 
     }
