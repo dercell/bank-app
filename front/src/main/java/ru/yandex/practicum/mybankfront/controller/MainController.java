@@ -15,6 +15,7 @@ import ru.yandex.practicum.mybankfront.controller.dto.CashAction;
 import ru.yandex.practicum.mybankfront.controller.stub.AccountStub;
 import ru.yandex.practicum.mybankfront.service.AccountService;
 import ru.yandex.practicum.mybankfront.service.CashService;
+import ru.yandex.practicum.mybankfront.service.TransferService;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -45,15 +46,18 @@ import java.util.Optional;
  */
 @Controller
 public class MainController {
-    // TODO: Удалить заглушку, так как используется только для ознакомительных целей
-    @Autowired
-    private AccountStub accountStub;
 
-    @Autowired
-    private AccountService accountService;
 
-    @Autowired
-    private CashService cashService;
+    private final AccountService accountService;
+    private final CashService cashService;
+    private final TransferService transferService;
+
+    public MainController(AccountService accountService, CashService cashService, TransferService transferService) {
+        this.accountService = accountService;
+        this.cashService = cashService;
+        this.transferService = transferService;
+    }
+
 
     /**
      * GET /.
@@ -159,10 +163,14 @@ public class MainController {
     public String transfer(
             Model model,
             @RequestParam("value") int value,
-            @RequestParam("login") String login
+            @RequestParam("login") String toLogin,
+            @AuthenticationPrincipal OidcUser oidcUser
     ) {
-        // TODO: Заменить на то, что описано в комментарии к методу
-        accountStub.transfer(model, value, login);
+
+        String fromLogin = oidcUser.getName();
+        String info = transferService.makeTransfer(fromLogin, toLogin, value);
+        AccountInfoDto acc = accountService.getAccByLogin(fromLogin);
+        fillModel(model, acc, info, null);
 
         return "main";
     }

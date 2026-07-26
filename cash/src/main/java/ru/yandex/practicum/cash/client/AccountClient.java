@@ -17,7 +17,7 @@ public class AccountClient {
     public void chargeBalance(String login, String action, int sum) {
         try {
             webClient.put().uri(uriBuilder -> uriBuilder
-                            .path("/accounts/info/{login}")
+                            .path("/accounts/charge/{login}")
                             .queryParam("action", action)
                             .queryParam("sum", sum)
                             .build(login))

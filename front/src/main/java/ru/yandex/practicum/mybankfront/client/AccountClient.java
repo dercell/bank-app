@@ -40,7 +40,7 @@ public class AccountClient {
     public AccountInfoDto updateAccount(String login, String username, LocalDate birthdate) {
         try {
             log.info("Request for account update login: {}, username: {}, birthdate: {}", login, username, birthdate.format(DateTimeFormatter.ISO_DATE));
-            AccountInfoDto acc = webClient.post()
+            AccountInfoDto acc = webClient.put()
                     .uri(uriBuilder -> uriBuilder
                             .path("/accounts/info/{login}")
                             .queryParam("username", username)

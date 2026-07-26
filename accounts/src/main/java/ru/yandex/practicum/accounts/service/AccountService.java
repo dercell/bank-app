@@ -69,6 +69,9 @@ public class AccountService {
     public void transfer(String fromLogin, String toLogin, int value) {
         Account from = getAccountByLogin(fromLogin);
         Account to = getAccountByLogin(toLogin);
+        if (value > from.getBalance()) {
+            throw new NotEnoughMoneyException("Недостаточно средств на счету");
+        }
 
         from.setBalance(from.getBalance() - value);
         to.setBalance(to.getBalance() + value);
