@@ -1,4 +1,4 @@
-package ru.yandex.practicum.cash.controller;
+package ru.yandex.practicum.transfer.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;

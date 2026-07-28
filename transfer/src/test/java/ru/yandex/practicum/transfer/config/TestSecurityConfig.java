@@ -1,4 +1,4 @@
-package ru.yandex.practicum.cash.config;
+package ru.yandex.practicum.transfer.config;
 
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;

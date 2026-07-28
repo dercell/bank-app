@@ -43,7 +43,7 @@ class CashControllerTest {
                         .param("action", ACTION)
                         .param("sum", String.valueOf(SUM))
                         .with(jwt().jwt(jwt -> jwt
-                                .claim("realm_access", Map.of("roles", List.of("USER")))
+                                .claim("realm_access", List.of("USER", "CASH_WRITE"))
                         )))
                 .andExpect(status().isNoContent());
 
@@ -60,7 +60,7 @@ class CashControllerTest {
                         .param("action", ACTION)
                         .param("sum", "-100")
                         .with(jwt().jwt(jwt -> jwt
-                                .claim("realm_access", Map.of("roles", List.of("USER")))
+                                .claim("realm_access", Map.of("roles", List.of("USER", "CASH_WRITE")))
                         )))
                 .andExpect(status().isInternalServerError());
     }
@@ -71,7 +71,7 @@ class CashControllerTest {
         mockMvc.perform(put("/cash/{login}", LOGIN)
                         .param("action", ACTION)
                         .param("sum", String.valueOf(SUM)))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
 
         verify(cashService, never()).chargeSum(anyString(), anyString(), anyInt());
     }

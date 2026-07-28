@@ -87,7 +87,7 @@ class AccountControllerTest {
     @Test
     void getAccountInfo_Unauthorized() throws Exception {
         mockMvc.perform(get("/accounts/info/luke"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -99,7 +99,7 @@ class AccountControllerTest {
                         .param("username", "Luke Skywalker")
                         .param("birthdate", "1990-01-15")
                         .with(jwt().jwt(jwt -> jwt
-                                .claim("realm_access", Map.of("roles", List.of("USER", "account.write")))
+                                .claim("realm_access", Map.of("roles", List.of("USER", "ACCOUNT_WRITE")))
                         )))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.curAccount.login").value("luke"));
@@ -114,7 +114,7 @@ class AccountControllerTest {
                         .param("username", "Luke Skywalker")
                         .param("birthdate", "invalid-date")
                         .with(jwt().jwt(jwt -> jwt
-                                .claim("realm_access", Map.of("roles", List.of("USER", "account.write")))
+                                .claim("realm_access", Map.of("roles", List.of("USER", "ACCOUNT_WRITE")))
                         )))
                 .andExpect(status().isInternalServerError());
     }
@@ -124,7 +124,7 @@ class AccountControllerTest {
         mockMvc.perform(put("/accounts/info/luke")
                         .param("username", "Luke Skywalker")
                         .param("birthdate", "1990-01-15"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -135,7 +135,7 @@ class AccountControllerTest {
                         .param("action", "GET")
                         .param("sum", "1000")
                         .with(jwt().jwt(jwt -> jwt
-                                .claim("realm_access", Map.of("roles", List.of("USER", "account.write")))
+                                .claim("realm_access", Map.of("roles", List.of("USER", "ACCOUNT_WRITE")))
                         )))
                 .andExpect(status().isNoContent());
     }
@@ -149,7 +149,7 @@ class AccountControllerTest {
                         .param("action", "PUT")
                         .param("sum", "-100")
                         .with(jwt().jwt(jwt -> jwt
-                                .claim("realm_access", Map.of("roles", List.of("USER", "account.write")))
+                                .claim("realm_access", Map.of("roles", List.of("USER", "ACCOUNT_WRITE")))
                         )))
                 .andExpect(status().isInternalServerError());
     }
@@ -157,9 +157,9 @@ class AccountControllerTest {
     @Test
     void chargeBalance_Forbidden() throws Exception {
         mockMvc.perform(put("/charge/luke")
-                        .param("action", "DEPOSIT")
+                        .param("action", "GET")
                         .param("sum", "1000"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -171,7 +171,7 @@ class AccountControllerTest {
                         .param("to", "to")
                         .param("sum", "500")
                         .with(jwt().jwt(jwt -> jwt
-                                .claim("realm_access", Map.of("roles", List.of("USER", "transfer.write")))
+                                .claim("realm_access", Map.of("roles", List.of("USER", "ACCOUNT_WRITE")))
                         )))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Перевод выполнен: 500 со счёта from на счёт to"));
@@ -187,7 +187,7 @@ class AccountControllerTest {
                         .param("to", "to")
                         .param("sum", "-999999")
                         .with(jwt().jwt(jwt -> jwt
-                                .claim("realm_access", Map.of("roles", List.of("USER", "account.write")))
+                                .claim("realm_access", Map.of("roles", List.of("USER", "ACCOUNT_WRITE")))
                         )))
                 .andExpect(status().isInternalServerError());
     }
@@ -198,6 +198,6 @@ class AccountControllerTest {
                         .param("from", "from")
                         .param("to", "to")
                         .param("sum", "500"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 }
