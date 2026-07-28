@@ -1,8 +1,10 @@
 package ru.yandex.practicum.accounts.controller;
 
+import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.accounts.model.AccountDto;
 import ru.yandex.practicum.accounts.service.AccountsService;
@@ -12,6 +14,7 @@ import java.time.LocalDate;
 @RestController
 @AllArgsConstructor
 @RequestMapping("/accounts")
+@Validated
 public class AccountController {
 
     private AccountsService accountService;
@@ -35,7 +38,7 @@ public class AccountController {
     @PreAuthorize("hasRole('SERVICE') && hasAuthority('account.write')")
     public ResponseEntity<Void> chargeBalance(@PathVariable("login") String login,
                                               @RequestParam("action") String action,
-                                              @RequestParam("sum") Integer sum) {
+                                              @RequestParam("sum") @Min(0) Integer sum) {
 
         accountService.chargeBalance(login, action, sum);
         return ResponseEntity.noContent().build();
@@ -45,7 +48,7 @@ public class AccountController {
     @PreAuthorize("hasRole('SERVICE') && hasAuthority('account.write')")
     public String transfer(@RequestParam("from") String fromLogin,
                            @RequestParam("to") String toLogin,
-                           @RequestParam("sum") int sum) {
+                           @RequestParam("sum") @Min(0) int sum) {
         accountService.transfer(fromLogin, toLogin, sum);
         return "Перевод выполнен: "
                 + sum

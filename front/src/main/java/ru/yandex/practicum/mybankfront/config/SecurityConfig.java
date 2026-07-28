@@ -30,9 +30,6 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth ->
                         auth.requestMatchers("/", "/actuator/**", "/css/**").permitAll()
                                 .anyRequest().authenticated())
-//                .oauth2Login(oauth2 -> oauth2
-//                        .loginPage("/oauth2/authorization/keycloak") // Перенаправление на Keycloak
-//                )
                 .oauth2Login(Customizer.withDefaults())
                 .logout(logout -> logout
                         .logoutSuccessHandler(logoutSuccessHandler())

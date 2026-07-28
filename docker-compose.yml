@@ -1,15 +1,15 @@
 version: '3.8'
 
 services:
-#  consul-server:
-#    image: consul:1.15.4
-#    container_name: consul-server
-#    restart: always
-#    ports:
-#      - "8500:8500"
-#    volumes:
-#      - ./common/consul/data:/consul/data
-#      - ./common/consul/config:/consul/config
+  consul-server:
+    image: consul:1.15.4
+    container_name: consul-server
+    restart: always
+    ports:
+      - "8500:8500"
+    volumes:
+      - ./common/consul/data:/consul/data
+      - ./common/consul/config:/consul/config
   keycloak:
     image: quay.io/keycloak/keycloak:26.6.3
     environment:
