@@ -1,10 +1,7 @@
-package ru.yandex.practicum.mybankfront.controller.dto;
+package ru.yandex.practicum.mybankfront.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 import java.time.LocalDate;
 
@@ -12,6 +9,8 @@ import java.time.LocalDate;
 @Setter
 @ToString
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class AccountDto {
 
     @JsonProperty

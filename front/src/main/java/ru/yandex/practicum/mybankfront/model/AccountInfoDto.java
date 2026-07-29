@@ -1,15 +1,16 @@
-package ru.yandex.practicum.mybankfront.controller.dto;
+package ru.yandex.practicum.mybankfront.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.*;
 
 import java.util.List;
 
 @Getter
+@Setter
 @ToString
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class AccountInfoDto {
 
     @JsonProperty

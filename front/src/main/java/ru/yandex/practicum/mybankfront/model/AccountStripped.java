@@ -1,4 +1,4 @@
-package ru.yandex.practicum.mybankfront.controller.dto;
+package ru.yandex.practicum.mybankfront.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;

@@ -1,11 +1,9 @@
 package ru.yandex.practicum.mybankfront.client;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
-import ru.yandex.practicum.mybankfront.controller.dto.AccountInfoDto;
+import ru.yandex.practicum.mybankfront.model.AccountInfoDto;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
