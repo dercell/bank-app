@@ -1,6 +1,5 @@
 package ru.yandex.practicum.transfer.unit;
 
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -31,7 +30,6 @@ class TransferServiceTest {
     private static final int SUM = 500;
 
     @Test
-    @DisplayName("makeTransfer - успешный перевод")
     void makeTransfer_Success() {
         String expectedResponse = "Перевод выполнен: 500 со счёта from_user на счёт to_user";
 

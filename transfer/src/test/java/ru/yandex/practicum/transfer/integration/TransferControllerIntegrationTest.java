@@ -1,7 +1,8 @@
 package ru.yandex.practicum.transfer.integration;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -12,18 +13,20 @@ import org.springframework.test.web.servlet.MockMvc;
 import ru.yandex.practicum.transfer.client.AccountClient;
 import ru.yandex.practicum.transfer.client.NotificationClient;
 import ru.yandex.practicum.transfer.config.TestSecurityConfig;
-import ru.yandex.practicum.transfer.service.TransferService;
+
 
 import java.util.List;
 import java.util.Map;
 
-import static org.mockito.ArgumentMatchers.anyString;
+
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@Tag("controller")
+@Tag("integration")
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
@@ -38,9 +41,6 @@ class TransferControllerIntegrationTest {
 
     @MockitoBean
     private NotificationClient notificationClient;
-
-    @InjectMocks
-    private TransferService transferService;
 
     private static final String FROM_LOGIN = "luke";
     private static final String TO_LOGIN = "han";
