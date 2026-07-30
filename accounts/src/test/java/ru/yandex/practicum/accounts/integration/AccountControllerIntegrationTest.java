@@ -1,39 +1,44 @@
-package ru.yandex.practicum.accounts.unit;
+package ru.yandex.practicum.accounts.integration;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
+import ru.yandex.practicum.accounts.client.NotificationClient;
 import ru.yandex.practicum.accounts.config.TestSecurityConfig;
-import ru.yandex.practicum.accounts.controller.AccountController;
 import ru.yandex.practicum.accounts.model.Account;
 import ru.yandex.practicum.accounts.model.AccountDto;
-import ru.yandex.practicum.accounts.service.AccountsService;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
-import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@Tag("unit")
+@Tag("integration")
 @Tag("controller")
-@WebMvcTest(AccountController.class)
+@SpringBootTest
+@AutoConfigureMockMvc
+@ActiveProfiles("test")
 @Import(TestSecurityConfig.class)
-class AccountControllerTest {
+@Transactional
+class AccountControllerIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @MockitoBean
-    private AccountsService accountService;
+    private NotificationClient notificationClient;
 
     private AccountDto testDto;
 
@@ -53,7 +58,6 @@ class AccountControllerTest {
 
     @Test
     void getAccountInfo_Success() throws Exception {
-        when(accountService.getAccountInfo("luke")).thenReturn(testDto);
 
         mockMvc.perform(get("/accounts/info/luke")
                         .with(jwt().jwt(jwt -> jwt
@@ -70,8 +74,7 @@ class AccountControllerTest {
         Account acc = testDto.getCurAccount();
         acc.setUsername(null);
         acc.setBirthDate(null);
-        when(accountService.getAccountInfo("unknown"))
-                .thenReturn(testDto);
+
 
         mockMvc.perform(get("/accounts/info/unknown")
                         .with(jwt().jwt(jwt -> jwt
@@ -79,7 +82,7 @@ class AccountControllerTest {
                         ))
                 )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.curAccount.login").value("luke"))
+                .andExpect(jsonPath("$.curAccount.login").value("unknown"))
                 .andExpect(jsonPath("$.curAccount.username").isEmpty());
     }
 
@@ -91,8 +94,6 @@ class AccountControllerTest {
 
     @Test
     void updateAccount_Success() throws Exception {
-        when(accountService.updateAccount(anyString(), anyString(), any(LocalDate.class)))
-                .thenReturn(testDto);
 
         mockMvc.perform(put("/accounts/info/luke")
                         .param("username", "Luke Skywalker")
@@ -106,8 +107,6 @@ class AccountControllerTest {
 
     @Test
     void updateAccount_Error() throws Exception {
-        when(accountService.updateAccount(anyString(), anyString(), any(LocalDate.class)))
-                .thenThrow(new IllegalArgumentException("Неверная дата"));
 
         mockMvc.perform(put("/accounts/info/luke")
                         .param("username", "Luke Skywalker")
@@ -128,7 +127,7 @@ class AccountControllerTest {
 
     @Test
     void chargeBalance_Success() throws Exception {
-        doNothing().when(accountService).chargeBalance("luke", "GET", 1000);
+
 
         mockMvc.perform(put("/accounts/charge/luke")
                         .param("action", "GET")
@@ -141,8 +140,6 @@ class AccountControllerTest {
 
     @Test
     void chargeBalance_Error() throws Exception {
-        doThrow(new IllegalArgumentException("Сумма не может быть отрицательной"))
-                .when(accountService).chargeBalance("luke", "PUT", -100);
 
         mockMvc.perform(put("/accounts/charge/luke")
                         .param("action", "PUT")
@@ -163,23 +160,20 @@ class AccountControllerTest {
 
     @Test
     void transfer_Success() throws Exception {
-        doNothing().when(accountService).transfer("from", "to", 500);
 
         mockMvc.perform(put("/accounts/transfer")
-                        .param("from", "from")
-                        .param("to", "to")
+                        .param("from", "luke")
+                        .param("to", "han")
                         .param("sum", "500")
                         .with(jwt().jwt(jwt -> jwt
                                 .claim("realm_access", Map.of("roles", List.of("USER", "ACCOUNT_WRITE")))
                         )))
                 .andExpect(status().isOk())
-                .andExpect(content().string("Перевод выполнен: 500 со счёта from на счёт to"));
+                .andExpect(content().string("Перевод выполнен: 500 со счёта luke на счёт han"));
     }
 
     @Test
     void transfer_Error() throws Exception {
-        doThrow(new IllegalStateException("Недостаточно средств"))
-                .when(accountService).transfer("from", "to", -999999);
 
         mockMvc.perform(put("/accounts/transfer")
                         .param("from", "from")
