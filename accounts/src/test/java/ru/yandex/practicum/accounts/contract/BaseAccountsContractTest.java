@@ -83,8 +83,8 @@ public abstract class BaseAccountsContractTest {
     private AccountDto createUpdatedAccountDto() {
         Account account = Account.builder()
                 .login("luke")
-                .username("John Updated")
-                .birthDate(LocalDate.of(1985, 5, 10))
+                .username("Luke Starkiller")
+                .birthDate(LocalDate.of(1970, 1, 15))
                 .balance(1000L)
                 .build();
 
