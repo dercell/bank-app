@@ -7,11 +7,7 @@ Contract.make {
 
     request {
         method 'PUT'
-        url '/accounts/charge/han'
-        headers {
-            header 'Content-Type': 'application/x-www-form-urlencoded'
-        }
-        body 'action=deposit&sum=-1000'
+        url '/accounts/charge/han?action=deposit&sum=-1000'
     }
 
     response {

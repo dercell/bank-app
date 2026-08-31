@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.yandex.practicum.transfer.client.AccountClient;
 import ru.yandex.practicum.transfer.client.NotificationClient;
+import ru.yandex.practicum.transfer.dto.ServiceResultDto;
 import ru.yandex.practicum.transfer.service.TransferService;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -31,13 +32,13 @@ class TransferServiceTest {
 
     @Test
     void makeTransfer_Success() {
-        String expectedResponse = "Перевод выполнен: 500 со счёта from_user на счёт to_user";
+        ServiceResultDto expectedResponse = new ServiceResultDto("Перевод выполнен: 500 со счёта from_user на счёт to_user");
 
         when(accountClient.transfer(FROM_LOGIN, TO_LOGIN, SUM)).thenReturn(expectedResponse);
 
-        String result = transferService.makeTransfer(FROM_LOGIN, TO_LOGIN, SUM);
+        ServiceResultDto result = transferService.makeTransfer(FROM_LOGIN, TO_LOGIN, SUM);
 
-        assertThat(result).isNotNull().isEqualTo(expectedResponse);
+        assertThat(result.getMessage()).isNotNull().isEqualTo(expectedResponse.getMessage());
 
         verify(accountClient).transfer(FROM_LOGIN, TO_LOGIN, SUM);
         verify(notificationClient).sendNotification("Перевод выполнен: 500 со счёта from_user на счёт to_user");

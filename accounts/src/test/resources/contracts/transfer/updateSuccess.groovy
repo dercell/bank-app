@@ -8,11 +8,7 @@ Contract.make {
 
     request {
         method 'PUT'
-        url '/accounts/info/han'
-        headers {
-            header 'Content-Type': 'application/x-www-form-urlencoded'
-        }
-        body 'username=Han+Solo&birthdate=1970-07-15'
+        url '/accounts/info/han?username=Han+Solo&birthdate=1970-07-15'
     }
 
     response {

@@ -1,0 +1,10 @@
+spring:
+  cloud:
+    config:
+      enabled: false
+      import-check:
+        enabled: false
+custom:
+  baseUrl:
+    api-gateway: http://localhost:8888
+

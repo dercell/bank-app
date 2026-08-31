@@ -10,6 +10,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.yandex.practicum.transfer.config.TestSecurityConfig;
 import ru.yandex.practicum.transfer.controller.TransferController;
+import ru.yandex.practicum.transfer.dto.ServiceResultDto;
 import ru.yandex.practicum.transfer.service.TransferService;
 
 import java.util.List;
@@ -40,7 +41,7 @@ class TransferControllerTest {
 
     @Test
     void transfer_Success() throws Exception {
-        String expectedResponse = "Перевод выполнен: 1000 со счёта luke на счёт han";
+        ServiceResultDto expectedResponse = new ServiceResultDto("Перевод выполнен: 1000 со счёта luke на счёт han");
         when(transferService.makeTransfer(FROM_LOGIN, TO_LOGIN, SUM))
                 .thenReturn(expectedResponse);
 
@@ -52,7 +53,7 @@ class TransferControllerTest {
                                 .claim("realm_access", Map.of("roles", List.of("USER", "TRANSFER_WRITE")))
                         )))
                 .andExpect(status().isOk())
-                .andExpect(content().string(expectedResponse));
+                .andExpect(jsonPath("$.message").value(expectedResponse.getMessage()));
 
         verify(transferService, times(1)).makeTransfer(FROM_LOGIN, TO_LOGIN, SUM);
     }

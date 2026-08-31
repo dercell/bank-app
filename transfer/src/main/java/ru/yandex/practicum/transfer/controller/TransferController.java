@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import ru.yandex.practicum.transfer.dto.ServiceResultDto;
 import ru.yandex.practicum.transfer.service.TransferService;
 
 @Slf4j
@@ -24,7 +25,7 @@ public class TransferController {
 
     @PutMapping("/submit")
     @PreAuthorize("hasRole('USER') && hasAuthority('transfer.write')")
-    public String transfer(
+    public ServiceResultDto transfer(
             @RequestParam("from") String fromLogin,
             @RequestParam("to") String toLogin,
             @RequestParam("sum") @Min(0) int sum

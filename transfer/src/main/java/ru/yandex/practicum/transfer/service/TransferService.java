@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.transfer.client.AccountClient;
 import ru.yandex.practicum.transfer.client.NotificationClient;
+import ru.yandex.practicum.transfer.dto.ServiceResultDto;
 
 @Slf4j
 @Service
@@ -18,8 +19,8 @@ public class TransferService {
         this.notificationClient = notificationClient;
     }
 
-    public String makeTransfer(String fromLogin, String toLogin, int sum) {
-        String result = accountClient.transfer(fromLogin, toLogin, sum);
+    public ServiceResultDto makeTransfer(String fromLogin, String toLogin, int sum) {
+        ServiceResultDto result = accountClient.transfer(fromLogin, toLogin, sum);
         notificationClient.sendNotification("Перевод выполнен: "
                 + sum
                 + " со счёта " + fromLogin

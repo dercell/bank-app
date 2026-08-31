@@ -13,6 +13,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import ru.yandex.practicum.transfer.client.AccountClient;
 import ru.yandex.practicum.transfer.client.NotificationClient;
 import ru.yandex.practicum.transfer.config.TestSecurityConfig;
+import ru.yandex.practicum.transfer.dto.ServiceResultDto;
 
 
 import java.util.List;
@@ -22,8 +23,7 @@ import java.util.Map;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @Tag("controller")
 @Tag("integration")
@@ -49,7 +49,7 @@ class TransferControllerIntegrationTest {
 
     @Test
     void transfer_Success() throws Exception {
-        String expectedResponse = "Перевод выполнен: 1000 со счёта luke на счёт han";
+        ServiceResultDto expectedResponse = new ServiceResultDto("Перевод выполнен: 1000 со счёта luke на счёт han");
         when(accountClient.transfer(FROM_LOGIN, TO_LOGIN, SUM)).thenReturn(expectedResponse);
         doNothing().when(notificationClient).sendNotification(anyString());
 
@@ -61,7 +61,7 @@ class TransferControllerIntegrationTest {
                                 .claim("realm_access", Map.of("roles", List.of("USER", "TRANSFER_WRITE")))
                         )))
                 .andExpect(status().isOk())
-                .andExpect(content().string(expectedResponse));
+                .andExpect(jsonPath("$.message").value(expectedResponse.getMessage()));
 
 
     }

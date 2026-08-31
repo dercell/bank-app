@@ -8,11 +8,7 @@ Contract.make {
 
     request {
         method 'PUT'
-        url '/accounts/transfer'
-        headers {
-            header 'Content-Type': 'application/x-www-form-urlencoded'
-        }
-        body 'from=luke&to=han&sum=500'
+        url '/accounts/transfer?from=luke&to=han&sum=500'
     }
 
     response {
