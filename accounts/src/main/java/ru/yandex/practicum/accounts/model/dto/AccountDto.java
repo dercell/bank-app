@@ -1,7 +1,8 @@
-package ru.yandex.practicum.accounts.model;
+package ru.yandex.practicum.accounts.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
+import ru.yandex.practicum.accounts.model.entity.Account;
 
 import java.util.List;
 

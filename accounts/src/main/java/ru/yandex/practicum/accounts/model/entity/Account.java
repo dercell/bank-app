@@ -1,4 +1,4 @@
-package ru.yandex.practicum.accounts.model;
+package ru.yandex.practicum.accounts.model.entity;
 
 import jakarta.persistence.*;
 import lombok.*;

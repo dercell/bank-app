@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
-@Profile("!test")
+@Profile("prod")
 public class SecurityConfig {
 
     @Bean

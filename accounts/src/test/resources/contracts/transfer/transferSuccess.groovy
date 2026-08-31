@@ -1,0 +1,29 @@
+package contracts.transfer
+import org.springframework.cloud.contract.spec.Contract
+
+
+
+Contract.make {
+    description "Перевод 500 кредитов от Люка Хану"
+
+    request {
+        method 'PUT'
+        url '/accounts/transfer'
+        headers {
+            header 'Content-Type': 'application/x-www-form-urlencoded'
+        }
+        body 'from=luke&to=han&sum=500'
+    }
+
+    response {
+        status 200
+        headers {
+            header 'Content-Type': 'application/json'
+        }
+        body '''
+        {
+            "message": "Перевод выполнен: 500 со счёта luke на счёт han"
+        }
+        '''
+    }
+}

@@ -1,7 +1,7 @@
 package ru.yandex.practicum.accounts.repository;
 
 import org.springframework.data.repository.CrudRepository;
-import ru.yandex.practicum.accounts.model.Account;
+import ru.yandex.practicum.accounts.model.entity.Account;
 
 import java.util.List;
 import java.util.Optional;

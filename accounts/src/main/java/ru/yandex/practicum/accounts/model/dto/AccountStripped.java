@@ -1,4 +1,4 @@
-package ru.yandex.practicum.accounts.model;
+package ru.yandex.practicum.accounts.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
@@ -6,7 +6,7 @@ import lombok.*;
 @Getter
 @Setter
 @ToString
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor
 @AllArgsConstructor
 public class AccountStripped {
 

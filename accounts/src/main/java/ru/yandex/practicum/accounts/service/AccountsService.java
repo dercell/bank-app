@@ -6,9 +6,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.accounts.client.NotificationClient;
 import ru.yandex.practicum.accounts.exceptions.NotEnoughMoneyException;
-import ru.yandex.practicum.accounts.model.Account;
-import ru.yandex.practicum.accounts.model.AccountDto;
-import ru.yandex.practicum.accounts.model.AccountStripped;
+import ru.yandex.practicum.accounts.model.entity.Account;
+import ru.yandex.practicum.accounts.model.dto.AccountDto;
+import ru.yandex.practicum.accounts.model.dto.AccountStripped;
 import ru.yandex.practicum.accounts.model.CashAction;
 import ru.yandex.practicum.accounts.repository.AccountRepository;
 

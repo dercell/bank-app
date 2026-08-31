@@ -6,7 +6,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.accounts.model.AccountDto;
+import ru.yandex.practicum.accounts.model.dto.AccountDto;
+import ru.yandex.practicum.accounts.model.dto.ServiceResultDto;
 import ru.yandex.practicum.accounts.service.AccountsService;
 
 import java.time.LocalDate;
@@ -46,14 +47,14 @@ public class AccountController {
 
     @PutMapping("/transfer")
     @PreAuthorize("hasRole('SERVICE') && hasAuthority('account.write')")
-    public String transfer(@RequestParam("from") String fromLogin,
-                           @RequestParam("to") String toLogin,
-                           @RequestParam("sum") @Min(0) int sum) {
+    public ServiceResultDto transfer(@RequestParam("from") String fromLogin,
+                                     @RequestParam("to") String toLogin,
+                                     @RequestParam("sum") @Min(0) int sum) {
         accountService.transfer(fromLogin, toLogin, sum);
-        return "Перевод выполнен: "
+        return new ServiceResultDto("Перевод выполнен: "
                 + sum
                 + " со счёта " + fromLogin
-                + " на счёт " + toLogin;
+                + " на счёт " + toLogin);
     }
 
 

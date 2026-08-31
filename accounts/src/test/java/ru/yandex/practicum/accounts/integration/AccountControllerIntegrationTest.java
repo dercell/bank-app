@@ -13,8 +13,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.accounts.client.NotificationClient;
 import ru.yandex.practicum.accounts.config.TestSecurityConfig;
-import ru.yandex.practicum.accounts.model.Account;
-import ru.yandex.practicum.accounts.model.AccountDto;
+import ru.yandex.practicum.accounts.model.entity.Account;
+import ru.yandex.practicum.accounts.model.dto.AccountDto;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -169,7 +169,7 @@ class AccountControllerIntegrationTest {
                                 .claim("realm_access", Map.of("roles", List.of("USER", "ACCOUNT_WRITE")))
                         )))
                 .andExpect(status().isOk())
-                .andExpect(content().string("Перевод выполнен: 500 со счёта luke на счёт han"));
+                .andExpect(jsonPath("$.message").value("Перевод выполнен: 500 со счёта luke на счёт han"));
     }
 
     @Test

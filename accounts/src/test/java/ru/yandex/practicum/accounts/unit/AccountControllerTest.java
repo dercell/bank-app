@@ -6,12 +6,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.yandex.practicum.accounts.config.TestSecurityConfig;
 import ru.yandex.practicum.accounts.controller.AccountController;
-import ru.yandex.practicum.accounts.model.Account;
-import ru.yandex.practicum.accounts.model.AccountDto;
+import ru.yandex.practicum.accounts.model.entity.Account;
+import ru.yandex.practicum.accounts.model.dto.AccountDto;
 import ru.yandex.practicum.accounts.service.AccountsService;
 
 import java.time.LocalDate;
@@ -26,6 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Tag("unit")
 @Tag("controller")
 @WebMvcTest(AccountController.class)
+@ActiveProfiles("test")
 @Import(TestSecurityConfig.class)
 class AccountControllerTest {
 
@@ -173,7 +175,7 @@ class AccountControllerTest {
                                 .claim("realm_access", Map.of("roles", List.of("USER", "ACCOUNT_WRITE")))
                         )))
                 .andExpect(status().isOk())
-                .andExpect(content().string("Перевод выполнен: 500 со счёта from на счёт to"));
+                .andExpect(jsonPath("$.message").value("Перевод выполнен: 500 со счёта from на счёт to"));
     }
 
     @Test

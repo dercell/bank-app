@@ -8,7 +8,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.yandex.practicum.accounts.client.NotificationClient;
 import ru.yandex.practicum.accounts.exceptions.NotEnoughMoneyException;
-import ru.yandex.practicum.accounts.model.Account;
+import ru.yandex.practicum.accounts.model.entity.Account;
 import ru.yandex.practicum.accounts.repository.AccountRepository;
 import ru.yandex.practicum.accounts.service.AccountsService;
 
