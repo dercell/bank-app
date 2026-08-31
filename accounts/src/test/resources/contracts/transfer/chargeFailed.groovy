@@ -7,7 +7,7 @@ Contract.make {
 
     request {
         method 'PUT'
-        url '/accounts/charge/han?action=deposit&sum=-1000'
+        url '/accounts/charge/han?action=PUT&sum=-1000'
     }
 
     response {

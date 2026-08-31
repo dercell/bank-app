@@ -8,7 +8,6 @@ import org.springframework.cloud.contract.stubrunner.spring.AutoConfigureStubRun
 import org.springframework.cloud.contract.stubrunner.spring.StubRunnerProperties;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.web.reactive.function.client.WebClient;
 import ru.yandex.practicum.transfer.client.AccountClient;
 import ru.yandex.practicum.transfer.config.ContractTestWebClientConfig;
 import ru.yandex.practicum.transfer.dto.ServiceResultDto;
@@ -28,7 +27,6 @@ class AccountClientContractTest {
     @Autowired
     private AccountClient accountClient;
 
-
     @Test
     void successTransfer() {
 
@@ -38,11 +36,5 @@ class AccountClientContractTest {
         assertEquals("Перевод выполнен: 500 со счёта luke на счёт han", res.getMessage());
 
     }
-
-    private final WebClient webClient = WebClient.builder()
-            .baseUrl("http://localhost:8888")
-            .build();
-
-
 
 }

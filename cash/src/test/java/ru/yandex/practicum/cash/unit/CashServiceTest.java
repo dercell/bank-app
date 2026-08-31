@@ -29,21 +29,18 @@ class CashServiceTest {
 
     @Test
     void chargeSum_Deposit_Success() {
-        String action = "PUT";
 
-        cashService.chargeSum(TEST_LOGIN, action, TEST_SUM);
+        cashService.chargeSum(TEST_LOGIN, "PUT", TEST_SUM);
 
-        verify(accountClient).chargeBalance(TEST_LOGIN, action, TEST_SUM);
+        verify(accountClient).chargeBalance(TEST_LOGIN, "PUT", TEST_SUM);
         verify(notificationClient).sendNotification("Положено 500 руб");
     }
 
     @Test
     void chargeSum_Withdraw_Success() {
-        String action = "GET";
+        cashService.chargeSum(TEST_LOGIN, "GET", TEST_SUM);
 
-        cashService.chargeSum(TEST_LOGIN, action, TEST_SUM);
-
-        verify(accountClient).chargeBalance(TEST_LOGIN, action, TEST_SUM);
+        verify(accountClient).chargeBalance(TEST_LOGIN, "GET", TEST_SUM);
         verify(notificationClient).sendNotification("Снято 500 руб");
     }
 
