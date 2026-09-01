@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   consul-server:
     image: consul:1.15.4
@@ -15,17 +13,17 @@ services:
     image: consul:1.15.4
     container_name: consul-init
     depends_on:
-      - consul
+      - consul-server
     volumes:
-      - ./bank-app-kv.json:/bank-app-kv.json
+      - ./common/consul/bank-app-kv.json:/bank-app-kv.json
     entrypoint: |
       sh -c "
         echo 'Waiting for Consul to be ready...'
-        while ! wget -q --spider http://consul:8500/v1/status/leader; do
+        while ! wget -q --spider http://consul-server:8500/v1/status/leader; do
           sleep 2
         done
         echo 'Consul is ready! Importing data...'
-        consul kv import --http-addr=http://consul:8500 @/bank-app-kv.json
+        consul kv import --http-addr=http://consul-server:8500 @/bank-app-kv.json
         echo 'Import completed!'
       "
     restart: "no"
