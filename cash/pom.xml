@@ -36,4 +36,21 @@
 		</dependency>
 	</dependencies>
 
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-contract-maven-plugin</artifactId>
+				<version>4.1.0</version>
+				<extensions>true</extensions>
+				<configuration>
+					<testMode>MOCKMVC</testMode>
+					<baseClassForTests>
+						ru.yandex.practicum.cash.contract.BaseCashContractTest
+					</baseClassForTests>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
 </project>

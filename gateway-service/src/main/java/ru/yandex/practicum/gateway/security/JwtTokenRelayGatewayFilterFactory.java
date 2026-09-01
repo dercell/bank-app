@@ -30,7 +30,6 @@ public class JwtTokenRelayGatewayFilterFactory extends AbstractGatewayFilterFact
     public GatewayFilter apply(Object config) {
         return (exchange, chain) ->
                 extractToken(exchange)
-                        // если токен не нашли ни в контексте, ни в заголовке — считаем, что конфигурация сломана
                         .switchIfEmpty(Mono.error(
                                 new IllegalStateException("JWT token not found in SecurityContext or Authorization header")))
                         .flatMap(token -> chain.filter(addToken(exchange, token)));
