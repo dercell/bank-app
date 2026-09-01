@@ -7,8 +7,8 @@ spring:
     import: "consul:"
   cloud:
     consul:
-      host: localhost
-      port: 8500
+      host: ${CONSUL_HOST:localhost}
+      port: ${CONSUL_PORT:8500}
       discovery:
         service-name: cash
       config:
@@ -30,4 +30,4 @@ management:
     health:
       show-details: always
 server:
-  port: 8082
+  port: ${APP_PORT:8082}

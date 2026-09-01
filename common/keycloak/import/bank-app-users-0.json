@@ -1,0 +1,147 @@
+{
+  "realm" : "bank-app",
+  "users" : [ {
+    "id" : "28f761d7-8cc9-43fb-bb1a-74400cbbc945",
+    "username" : "han",
+    "firstName" : "han",
+    "lastName" : "solo",
+    "email" : "han@sw.com",
+    "emailVerified" : true,
+    "enabled" : true,
+    "createdTimestamp" : 1784475468302,
+    "totp" : false,
+    "credentials" : [ {
+      "id" : "c9e97110-0210-44f1-90b6-c1bf9ee8a91d",
+      "type" : "password",
+      "userLabel" : "My password",
+      "createdDate" : 1784475476459,
+      "secretData" : "{\"value\":\"nv1iP/GBGWjBi5GRyXNMGZ32czycBQk62H2UPJZ/FfQ=\",\"salt\":\"hDvj0xaDtUiNBGJWyc3aTQ==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":5,\"algorithm\":\"argon2\",\"additionalParameters\":{\"hashLength\":[\"32\"],\"memory\":[\"7168\"],\"type\":[\"id\"],\"version\":[\"1.3\"],\"parallelism\":[\"1\"]}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "TRANSFER_WRITE", "CASH_WRITE", "default-roles-bank-app", "ACCOUNT_WRITE", "USER" ],
+    "notBefore" : 0,
+    "groups" : [ ]
+  }, {
+    "id" : "63a2cf6e-5c8d-4b30-8f9a-931fdb64a6fd",
+    "username" : "lea",
+    "firstName" : "lea",
+    "lastName" : "organa",
+    "email" : "lea@sw.com",
+    "emailVerified" : true,
+    "enabled" : true,
+    "createdTimestamp" : 1784475486702,
+    "totp" : false,
+    "credentials" : [ {
+      "id" : "a2ea80ef-28a2-44e7-a74e-d92d9ed4612d",
+      "type" : "password",
+      "userLabel" : "My password",
+      "createdDate" : 1784475496539,
+      "secretData" : "{\"value\":\"zid4lqhhgoqWBl2Z+3s3Wlnk8JycMw9jMH9XNbxU10s=\",\"salt\":\"lLal8hIUWhcHA2bf19pbmg==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":5,\"algorithm\":\"argon2\",\"additionalParameters\":{\"hashLength\":[\"32\"],\"memory\":[\"7168\"],\"type\":[\"id\"],\"version\":[\"1.3\"],\"parallelism\":[\"1\"]}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "TRANSFER_WRITE", "CASH_WRITE", "default-roles-bank-app", "ACCOUNT_WRITE", "USER" ],
+    "notBefore" : 0,
+    "groups" : [ ]
+  }, {
+    "id" : "cd74403f-a580-433f-b81e-28eeb10e7bd6",
+    "username" : "luke",
+    "firstName" : "luke",
+    "lastName" : "skywalker",
+    "email" : "luke@sw.com",
+    "emailVerified" : true,
+    "enabled" : true,
+    "createdTimestamp" : 1784475440806,
+    "totp" : false,
+    "credentials" : [ {
+      "id" : "4c0d993c-9000-4c8a-bd48-084d37b9630b",
+      "type" : "password",
+      "userLabel" : "My password",
+      "createdDate" : 1784475452393,
+      "secretData" : "{\"value\":\"kCeFbL0cQkzYgCj2VxIEP/Jbr5t0DVKYfF+BpJxb69o=\",\"salt\":\"82DwDsyQZjOwrAEsOkbuTg==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":5,\"algorithm\":\"argon2\",\"additionalParameters\":{\"hashLength\":[\"32\"],\"memory\":[\"7168\"],\"type\":[\"id\"],\"version\":[\"1.3\"],\"parallelism\":[\"1\"]}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "TRANSFER_WRITE", "CASH_WRITE", "default-roles-bank-app", "ACCOUNT_WRITE", "USER" ],
+    "notBefore" : 0,
+    "groups" : [ ]
+  }, {
+    "id" : "71d2ad6d-1643-40f3-a2a0-30fd11fd5cd6",
+    "username" : "service-account-accounts-service",
+    "emailVerified" : false,
+    "enabled" : true,
+    "createdTimestamp" : 1784477376310,
+    "totp" : false,
+    "serviceAccountClientId" : "accounts-service",
+    "credentials" : [ ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "NOTIFICATION_WRITE", "default-roles-bank-app", "ACCOUNT_WRITE", "SERVICE" ],
+    "clientRoles" : {
+      "accounts-service" : [ "uma_protection" ]
+    },
+    "notBefore" : 0,
+    "groups" : [ ]
+  }, {
+    "id" : "aff76805-16a2-4fee-97f4-0ab198b5add1",
+    "username" : "service-account-cash-service",
+    "emailVerified" : false,
+    "enabled" : true,
+    "createdTimestamp" : 1784994021678,
+    "totp" : false,
+    "serviceAccountClientId" : "cash-service",
+    "credentials" : [ ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "NOTIFICATION_WRITE", "CASH_WRITE", "default-roles-bank-app", "ACCOUNT_WRITE", "SERVICE" ],
+    "clientRoles" : {
+      "cash-service" : [ "uma_protection" ]
+    },
+    "notBefore" : 0,
+    "groups" : [ ]
+  }, {
+    "id" : "75ea3d08-94f4-460b-bb93-50a283cfc33f",
+    "username" : "service-account-transfer-service",
+    "emailVerified" : false,
+    "enabled" : true,
+    "createdTimestamp" : 1785009242730,
+    "totp" : false,
+    "serviceAccountClientId" : "transfer-service",
+    "credentials" : [ ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "TRANSFER_WRITE", "NOTIFICATION_WRITE", "default-roles-bank-app", "ACCOUNT_WRITE", "SERVICE" ],
+    "clientRoles" : {
+      "transfer-service" : [ "uma_protection" ]
+    },
+    "notBefore" : 0,
+    "groups" : [ ]
+  }, {
+    "id" : "2ca1c23f-3cc5-4b85-be01-54a7bafaca4b",
+    "username" : "vader",
+    "firstName" : "Darth",
+    "lastName" : "Vader",
+    "email" : "dv@sw.com",
+    "emailVerified" : true,
+    "enabled" : true,
+    "createdTimestamp" : 1784579823273,
+    "totp" : false,
+    "credentials" : [ {
+      "id" : "47a33b10-a8a5-4bcc-8e07-e532bee6164b",
+      "type" : "password",
+      "userLabel" : "My password",
+      "createdDate" : 1784579844375,
+      "secretData" : "{\"value\":\"/bs5GgUbo4x736M6QDqih8Ao2Kuhz/m9polc0xE+TwI=\",\"salt\":\"NiKLowjsGWYgCDUrjfqiug==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":5,\"algorithm\":\"argon2\",\"additionalParameters\":{\"hashLength\":[\"32\"],\"memory\":[\"7168\"],\"type\":[\"id\"],\"version\":[\"1.3\"],\"parallelism\":[\"1\"]}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "TRANSFER_WRITE", "CASH_WRITE", "default-roles-bank-app", "ACCOUNT_WRITE", "USER" ],
+    "notBefore" : 0,
+    "groups" : [ ]
+  } ]
+}

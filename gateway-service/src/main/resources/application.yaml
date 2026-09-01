@@ -1,5 +1,5 @@
 server:
-  port: 8087
+  port: ${APP_PORT:8087}
 
 spring:
   application:
@@ -8,8 +8,8 @@ spring:
     import: "consul:"
   cloud:
     consul:
-      host: localhost
-      port: 8500
+      host: ${CONSUL_HOST:localhost}
+      port: ${CONSUL_PORT:8500}
       discovery:
         service-name: gateway
       config:
