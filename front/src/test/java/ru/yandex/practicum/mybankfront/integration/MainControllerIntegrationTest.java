@@ -21,6 +21,7 @@ import ru.yandex.practicum.mybankfront.config.TestSecurityConfig;
 import ru.yandex.practicum.mybankfront.model.AccountDto;
 import ru.yandex.practicum.mybankfront.model.AccountInfoDto;
 import ru.yandex.practicum.mybankfront.model.CashAction;
+import ru.yandex.practicum.mybankfront.model.ServiceResultDto;
 
 
 import java.time.LocalDate;
@@ -228,7 +229,7 @@ class MainControllerIntegrationTest {
     void transfer_Success() throws Exception {
         when(accountClient.getAccByLogin("luke")).thenReturn(testAccountInfo);
         when(transferClient.transfer("luke", "han", 1000))
-                .thenReturn("Перевод выполнен: 1000 со счёта luke на счёт han");
+                .thenReturn(new ServiceResultDto("Перевод выполнен: 1000 со счёта luke на счёт han"));
 
         mockMvc.perform(post("/transfer")
                         .param("value", "1000")

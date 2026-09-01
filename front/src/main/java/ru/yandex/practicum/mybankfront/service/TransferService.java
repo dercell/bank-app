@@ -2,6 +2,7 @@ package ru.yandex.practicum.mybankfront.service;
 
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.mybankfront.client.TransferClient;
+import ru.yandex.practicum.mybankfront.model.ServiceResultDto;
 
 @Service
 public class TransferService {
@@ -12,7 +13,7 @@ public class TransferService {
         this.transferClient = transferClient;
     }
 
-    public String makeTransfer(String fromLogin, String toLogin, int sum) {
+    public ServiceResultDto makeTransfer(String fromLogin, String toLogin, int sum) {
         return transferClient.transfer(fromLogin, toLogin, sum);
     }
 

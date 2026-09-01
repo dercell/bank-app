@@ -6,10 +6,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.yandex.practicum.mybankfront.client.TransferClient;
+import ru.yandex.practicum.mybankfront.model.ServiceResultDto;
 import ru.yandex.practicum.mybankfront.service.TransferService;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -27,13 +28,13 @@ class TransferServiceTest {
 
     @Test
     void makeTransfer_Success() {
-        String expectedResponse = "Перевод выполнен: 500 со счёта from_user на счёт to_user";
+        ServiceResultDto expectedResponse = new ServiceResultDto("Перевод выполнен: 500 со счёта from_user на счёт to_user");
 
         when(transferClient.transfer(FROM_LOGIN, TO_LOGIN, SUM)).thenReturn(expectedResponse);
 
-        String result = transferService.makeTransfer(FROM_LOGIN, TO_LOGIN, SUM);
+        ServiceResultDto result = transferService.makeTransfer(FROM_LOGIN, TO_LOGIN, SUM);
 
-        assertThat(result).isNotNull().isEqualTo(expectedResponse);
+        assertEquals(result.getMessage(), expectedResponse.getMessage());
         verify(transferClient).transfer(FROM_LOGIN, TO_LOGIN, SUM);
     }
 

@@ -14,6 +14,7 @@ import ru.yandex.practicum.mybankfront.controller.MainController;
 import ru.yandex.practicum.mybankfront.model.AccountDto;
 import ru.yandex.practicum.mybankfront.model.AccountInfoDto;
 import ru.yandex.practicum.mybankfront.model.CashAction;
+import ru.yandex.practicum.mybankfront.model.ServiceResultDto;
 import ru.yandex.practicum.mybankfront.service.AccountService;
 import ru.yandex.practicum.mybankfront.service.CashService;
 import ru.yandex.practicum.mybankfront.service.TransferService;
@@ -221,7 +222,7 @@ class MainControllerTest {
     @Test
     void transfer_Success() throws Exception {
         when(transferService.makeTransfer("luke", "han", 1000))
-                .thenReturn("Перевод выполнен: 1000 со счёта luke на счёт han");
+                .thenReturn(new ServiceResultDto("Перевод выполнен: 1000 со счёта luke на счёт han"));
         when(accountService.getAccByLogin("luke")).thenReturn(testAccountInfo);
 
         mockMvc.perform(post("/transfer")

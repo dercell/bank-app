@@ -12,6 +12,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import ru.yandex.practicum.mybankfront.model.AccountDto;
 import ru.yandex.practicum.mybankfront.model.AccountInfoDto;
 import ru.yandex.practicum.mybankfront.model.CashAction;
+import ru.yandex.practicum.mybankfront.model.ServiceResultDto;
 import ru.yandex.practicum.mybankfront.service.AccountService;
 import ru.yandex.practicum.mybankfront.service.CashService;
 import ru.yandex.practicum.mybankfront.service.TransferService;
@@ -102,9 +103,9 @@ public class MainController {
     ) {
 
         String fromLogin = oidcUser.getName();
-        String info = transferService.makeTransfer(fromLogin, toLogin, value);
+        ServiceResultDto info = transferService.makeTransfer(fromLogin, toLogin, value);
         AccountInfoDto acc = accountService.getAccByLogin(fromLogin);
-        fillModel(model, acc, info, null);
+        fillModel(model, acc, info.getMessage(), null);
 
         return "main";
     }
