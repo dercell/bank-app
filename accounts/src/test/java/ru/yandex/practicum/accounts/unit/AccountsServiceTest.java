@@ -1,6 +1,7 @@
 package ru.yandex.practicum.accounts.unit;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -20,6 +21,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
+@Tag("unit")
+@Tag("service")
 @ExtendWith(MockitoExtension.class)
 class AccountsServiceTest {
 

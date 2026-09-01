@@ -1,6 +1,7 @@
 package ru.yandex.practicum.notification.unit;
 
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -12,6 +13,8 @@ import ru.yandex.practicum.notification.service.NotificationService;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 
+@Tag("unit")
+@Tag("service")
 @ExtendWith(MockitoExtension.class)
 class NotificationServiceTest {
 

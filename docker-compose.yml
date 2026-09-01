@@ -11,24 +11,24 @@ services:
       - ./common/consul/data:/consul/data
       - ./common/consul/config:/consul/config
 
-#  consul-init:
-#    image: consul:1.15.4
-#    container_name: consul-init
-#    depends_on:
-#      - consul
-#    volumes:
-#      - ./backup.json:/backup.json
-#    entrypoint: |
-#      sh -c "
-#        echo 'Waiting for Consul to be ready...'
-#        while ! wget -q --spider http://consul:8500/v1/status/leader; do
-#          sleep 2
-#        done
-#        echo 'Consul is ready! Importing data...'
-#        consul kv import --http-addr=http://consul:8500 @/backup.json
-#        echo 'Import completed!'
-#      "
-#    restart: "no"
+  consul-init:
+    image: consul:1.15.4
+    container_name: consul-init
+    depends_on:
+      - consul
+    volumes:
+      - ./bank-app-kv.json:/bank-app-kv.json
+    entrypoint: |
+      sh -c "
+        echo 'Waiting for Consul to be ready...'
+        while ! wget -q --spider http://consul:8500/v1/status/leader; do
+          sleep 2
+        done
+        echo 'Consul is ready! Importing data...'
+        consul kv import --http-addr=http://consul:8500 @/bank-app-kv.json
+        echo 'Import completed!'
+      "
+    restart: "no"
 
   keycloak:
     image: quay.io/keycloak/keycloak:26.6.3

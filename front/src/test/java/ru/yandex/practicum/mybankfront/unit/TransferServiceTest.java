@@ -1,5 +1,6 @@
 package ru.yandex.practicum.mybankfront.unit;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -13,6 +14,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
+@Tag("unit")
+@Tag("service")
 @ExtendWith(MockitoExtension.class)
 class TransferServiceTest {
 

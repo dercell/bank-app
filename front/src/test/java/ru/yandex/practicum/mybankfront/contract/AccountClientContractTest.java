@@ -1,6 +1,7 @@
 package ru.yandex.practicum.mybankfront.contract;
 
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -17,6 +18,7 @@ import java.time.LocalDate;
 import static org.junit.jupiter.api.Assertions.*;
 
 
+@Tag("contract")
 @SpringBootTest
 @ActiveProfiles("contract-test")
 @AutoConfigureStubRunner(
@@ -35,14 +37,14 @@ class AccountClientContractTest {
         AccountInfoDto accountInfoDto = accountClient.getAccByLogin("luke");
 
         assertEquals("luke", accountInfoDto.getCurAccount().getLogin());
-        assertEquals("han", accountInfoDto.getAccounts().get(0).getLogin());
+        assertEquals("han", accountInfoDto.getAccounts().getFirst().getLogin());
     }
 
     @Test
     void successUpdateInfo(){
         AccountInfoDto accountInfoDto = accountClient.updateAccount("luke", "Luke Starkiller", LocalDate.of(1970, 1, 15));
         assertEquals("Luke Starkiller", accountInfoDto.getCurAccount().getUsername());
-        assertEquals("han", accountInfoDto.getAccounts().get(0).getLogin());
+        assertEquals("han", accountInfoDto.getAccounts().getFirst().getLogin());
     }
 
 }
