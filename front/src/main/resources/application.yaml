@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: front-app
+  config:
+    import: "consul:"
+  cloud:
+    consul:
+      host: ${CONSUL_HOST:localhost}
+      port: ${CONSUL_PORT:8500}
+      discovery:
+        service-name: front-app
+      config:
+        enabled: true
+        watch:
+          delay: 3000
+          enabled: true
+          wait-time: 5
+        defaultContext: application
+        data-key: data
+        format: yaml
+server:
+  port: ${APP_PORT:8083}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, refresh
+  endpoint:
+    health:
+      show-details: always
+

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+    <include file="001-accounts-table.xml" relativeToChangelogFile="true"/>
+    <include file="002-accounts-remove-create-dttm-col.xml" relativeToChangelogFile="true"/>
+    <include file="003-accounts-remove-modified-dttm-col.xml" relativeToChangelogFile="true"/>
+    <include file="004-accounts-remove-first-name-col.xml" relativeToChangelogFile="true"/>
+    <include file="005-accounts-remove-last-name-col.xml" relativeToChangelogFile="true"/>
+    <include file="006-accounts-add-username-col.xml" relativeToChangelogFile="true"/>
+
+</databaseChangeLog>

@@ -1,0 +1,31 @@
+server:
+  port: ${APP_PORT:8087}
+
+spring:
+  application:
+    name: gateway
+  config:
+    import: "consul:"
+  cloud:
+    consul:
+      host: ${CONSUL_HOST:localhost}
+      port: ${CONSUL_PORT:8500}
+      discovery:
+        service-name: gateway
+      config:
+        watch:
+          delay: 3000
+          enabled: true
+          wait-time: 5
+        enabled: true
+        defaultContext: application
+        data-key: data
+        format: yaml
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+

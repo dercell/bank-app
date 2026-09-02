@@ -1,0 +1,76 @@
+services:
+  consul-server:
+    image: consul:1.15.4
+    container_name: consul-server
+    restart: always
+    ports:
+      - "8500:8500"
+    volumes:
+      - ./common/consul/data:/consul/data
+      - ./common/consul/config:/consul/config
+
+  consul-init:
+    image: consul:1.15.4
+    container_name: consul-init
+    depends_on:
+      - consul-server
+    volumes:
+      - ./common/consul/bank-app-kv.json:/bank-app-kv.json
+    entrypoint: |
+      sh -c "
+        echo 'Waiting for Consul to be ready...'
+        while ! wget -q --spider http://consul-server:8500/v1/status/leader; do
+          sleep 2
+        done
+        echo 'Consul is ready! Importing data...'
+        consul kv import --http-addr=http://consul-server:8500 @/bank-app-kv.json
+        echo 'Import completed!'
+      "
+    restart: "no"
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.6.3
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/bank_db
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloak
+#      KC_DB_SCHEMA: keycloak
+    volumes:
+      - ./keycloak/import:/opt/keycloak/data/import
+    command:
+      - start-dev
+      - --import-realm
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/health/ready" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres:
+    image: postgres:15.1
+    container_name: bank_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: bank_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./common/db/:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U keycloak" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
