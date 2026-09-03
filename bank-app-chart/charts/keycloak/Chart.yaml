@@ -1,0 +1,37 @@
+annotations:
+  artifacthub.io/changes: |
+    - kind: security
+      description: Bump Keycloak from 26.6.1 to 26.6.3 — ~32 upstream CVE fixes including session fixation, redirect-URI bypass, SSRF, and refresh-token reuse
+    - kind: fixed
+      description: Publish not-ready addresses on the JGroups headless service so simultaneously started replicas form a single cluster instead of split-brain merging late
+  artifacthub.io/license: Apache-2.0
+  artifacthub.io/links: |
+    - name: Keycloak
+      url: https://www.keycloak.org
+    - name: Source
+      url: https://github.com/KitStream/helms
+apiVersion: v2
+appVersion: 26.6.3
+description: A Helm chart for deploying Keycloak IAM using the upstream quay.io/keycloak/keycloak
+  image on Kubernetes
+home: https://www.keycloak.org
+icon: https://www.keycloak.org/resources/images/icon.svg
+keywords:
+- keycloak
+- iam
+- identity
+- authentication
+- oauth2
+- oidc
+- sso
+- self-hosted
+- kubernetes
+maintainers:
+- name: KitStream
+  url: https://github.com/KitStream
+name: keycloak
+sources:
+- https://github.com/keycloak/keycloak
+- https://github.com/KitStream/helms
+type: application
+version: 26.6.3

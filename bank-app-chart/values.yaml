@@ -1,0 +1,69 @@
+global:
+  nameOverride: ""
+  fullnameOverride: ""
+  security:
+    allowInsecureImages: true
+bank-db:
+  image:
+    registry: docker.io
+    repository: library/postgres
+    tag: 15
+  auth:
+    username: bank_admin
+    password: bank_admin
+    database: bank_db
+  primary:
+    persistence:
+      enabled: true
+      size: 8Gi
+      storageClass: "local-path"
+    service:
+      type: NodePort
+      ports:
+        postgresql: 5432
+      nodePorts:
+        postgresql: "30432"
+    initdb:
+      scripts:
+        init.sql: |
+          CREATE SCHEMA IF NOT EXISTS keycloak;
+          CREATE SCHEMA IF NOT EXISTS accounts;
+bank-keycloak:
+  database:
+    type: "postgresql"
+    host: "bank-app-bank-db.default.svc.cluster.local"
+    port: "5432"
+    name: "bank_db"
+    user: "bank_admin"
+    password:
+      secretName: "bank-app-bank-db"
+      secretKey: "password"
+  extraEnvVars:
+    - name: KC_BOOTSTRAP_ADMIN_USERNAME
+      value: "kk_admin"
+    - name: KC_BOOTSTRAP_ADMIN_PASSWORD
+      value: "kk_admin"
+    - name: KEYCLOAK_EXTRA_ARGS
+      value: "--import-realm"
+    - name: KC_DB_SCHEMA
+      value: "keycloak"
+    - name: KC_DB_WAIT_INITIAL
+      value: "10"
+    - name: KC_DB_WAIT_MAX
+      value: "60"
+  healthEnabled: true
+  metrics:
+    enabled: true
+  service:
+    type: NodePort
+    httpPort: 8080
+    managementPort: 9000
+    nodePort: "30800"
+  extraVolumes:
+    - name: realm-config
+      configMap:
+        name: keycloak-realm-config
+  extraVolumeMounts:
+    - name: realm-config
+      mountPath: /opt/keycloak/data/import
+      readOnly: true
