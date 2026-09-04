@@ -1,9 +1,21 @@
 global:
-  nameOverride: ""
-  fullnameOverride: ""
   security:
     allowInsecureImages: true
-bank-db:
+
+ingress:
+  enabled: true
+  className: nginx
+  host: bank-api
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/use-forwarded-headers: "true"
+    nginx.ingress.kubernetes.io/enable-underscores-in-headers: "true"
+    nginx.ingress.kubernetes.io/auth-response-headers: "Authorization, X-User-Info"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "Authorization, Content-Type"
+
+postgresql:
   image:
     registry: docker.io
     repository: library/postgres
@@ -16,7 +28,7 @@ bank-db:
     persistence:
       enabled: true
       size: 8Gi
-      storageClass: "local-path"
+      storageClass: "hostpath"
     service:
       type: NodePort
       ports:
@@ -28,42 +40,64 @@ bank-db:
         init.sql: |
           CREATE SCHEMA IF NOT EXISTS keycloak;
           CREATE SCHEMA IF NOT EXISTS accounts;
-bank-keycloak:
-  database:
-    type: "postgresql"
-    host: "bank-app-bank-db.default.svc.cluster.local"
-    port: "5432"
-    name: "bank_db"
-    user: "bank_admin"
-    password:
-      secretName: "bank-app-bank-db"
-      secretKey: "password"
-  extraEnvVars:
-    - name: KC_BOOTSTRAP_ADMIN_USERNAME
-      value: "kk_admin"
-    - name: KC_BOOTSTRAP_ADMIN_PASSWORD
-      value: "kk_admin"
-    - name: KEYCLOAK_EXTRA_ARGS
-      value: "--import-realm"
-    - name: KC_DB_SCHEMA
-      value: "keycloak"
-    - name: KC_DB_WAIT_INITIAL
-      value: "10"
-    - name: KC_DB_WAIT_MAX
-      value: "60"
-  healthEnabled: true
-  metrics:
-    enabled: true
+accounts:
   service:
-    type: NodePort
-    httpPort: 8080
-    managementPort: 9000
-    nodePort: "30800"
-  extraVolumes:
-    - name: realm-config
-      configMap:
-        name: keycloak-realm-config
-  extraVolumeMounts:
-    - name: realm-config
-      mountPath: /opt/keycloak/data/import
-      readOnly: true
+    port: 8081
+  extraEnvVars:
+    - name: KEYCLOAK_CLIENT_ID
+      value: accounts-service
+    - name: KEYCLOAK_ISSUER_URI
+      value: http://host.docker.internal:8080/realms/bank-app
+    - name: KEYCLOAK_CLIENT_SECRET
+      value: z4YSPCjeXtZWb5qkwaL0YOrRGs4TP2Go
+    - name: KEYCLOAK_TOKEN_URI
+      value: http://host.docker.internal:8080/realms/bank-app/protocol/openid-connect/token
+    - name: APP_PORT
+      value: "8081"
+    - name: ACCOUNT_DB_URL
+      value: jdbc:postgresql://bank-app-postgresql.default.svc.cluster.local:5432/bank_db?currentSchema=accounts
+    - name: ACCOUNT_USERNAME
+      value: bank_admin
+    - name: ACCOUNT_PASSWORD
+      value: bank_admin
+    - name: BANK_API_URL
+      value: http://bank-api
+cash:
+  service:
+    port: 8082
+  extraEnvVars:
+    - name: KEYCLOAK_CLIENT_ID
+      value: cash-service
+    - name: KEYCLOAK_ISSUER_URI
+      value: http://host.docker.internal:8080/realms/bank-app
+    - name: KEYCLOAK_CLIENT_SECRET
+      value: Op9oxqitQbCeLm3sV7OykkjkNo8CmKbs
+    - name: KEYCLOAK_TOKEN_URI
+      value: http://host.docker.internal:8080/realms/bank-app/protocol/openid-connect/token
+    - name: APP_PORT
+      value: "8082"
+    - name: BANK_API_URL
+      value: http://bank-api
+transfer:
+  service:
+    port: 8085
+  extraEnvVars:
+    - name: KEYCLOAK_CLIENT_ID
+      value: transfer-service
+    - name: KEYCLOAK_ISSUER_URI
+      value: http://host.docker.internal:8080/realms/bank-app
+    - name: KEYCLOAK_CLIENT_SECRET
+      value: utcIlwVUDL4ExfP0VUG6t0HKDYhGev8P
+    - name: KEYCLOAK_TOKEN_URI
+      value: http://host.docker.internal:8080/realms/bank-app/protocol/openid-connect/token
+    - name: APP_PORT
+      value: "8085"
+    - name: BANK_API_URL
+      value: http://bank-api
+notification:
+  service:
+    port: 8084
+  extraEnvVars:
+    - name: KEYCLOAK_ISSUER_URI
+      value: http://host.docker.internal:8080/realms/bank-app
+

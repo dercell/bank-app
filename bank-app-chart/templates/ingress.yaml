@@ -1,0 +1,48 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}-gateway
+  annotations:
+    {{- with .Values.ingress.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  rules:
+    - host: {{ .Values.ingress.host }}
+      http:
+        paths:
+          - path: /accounts
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Release.Name }}-accounts
+                port:
+                  number: {{ .Values.accounts.service.port }}
+          - path: /cash
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Release.Name }}-cash
+                port:
+                  number: {{ .Values.cash.service.port }}
+          - path: /transfer
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Release.Name }}-transfer
+                port:
+                  number: {{ .Values.transfer.service.port }}
+          - path: /notification
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Release.Name }}-notification
+                port:
+                  number: {{ .Values.notification.service.port }}
+  {{- if .Values.ingress.tls }}
+  tls:
+    {{- toYaml .Values.ingress.tls | nindent 4 }}
+  {{- end }}
+  {{- end }}

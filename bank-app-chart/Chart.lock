@@ -2,8 +2,17 @@ dependencies:
 - name: postgresql
   repository: oci://registry-1.docker.io/bitnamicharts
   version: 12.1.14
-- name: keycloak
-  repository: file://charts/keycloak
-  version: 26.6.3
-digest: sha256:c3ff97ad5574aee1f580803a66d419766d87bf53e3e078382fce0d16d195ad67
-generated: "2026-09-03T14:49:37.747841+03:00"
+- name: accounts
+  repository: file://charts/accounts
+  version: 0.1.0
+- name: notification
+  repository: file://charts/notification
+  version: 0.1.0
+- name: cash
+  repository: file://charts/cash
+  version: 0.1.0
+- name: transfer
+  repository: file://charts/transfer
+  version: 0.1.0
+digest: sha256:56585b11ca592fd8f335eb4c5d233e812a44a077bbd86b88446c96ecccd08dfe
+generated: "2026-09-04T23:12:24.55617+03:00"

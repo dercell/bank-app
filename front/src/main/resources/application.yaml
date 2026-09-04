@@ -1,25 +1,22 @@
 spring:
   application:
-    name: front-app
-  config:
-    import: "consul:"
-  cloud:
-    consul:
-      host: ${CONSUL_HOST:localhost}
-      port: ${CONSUL_PORT:8500}
-      discovery:
-        service-name: front-app
-      config:
-        enabled: true
-        watch:
-          delay: 3000
-          enabled: true
-          wait-time: 5
-        defaultContext: application
-        data-key: data
-        format: yaml
+    name: ${APP_NAME:front-app}
+  security:
+    oauth2:
+      client:
+        registration:
+          keycloak:
+            client-id: ${KEYCLOAK_CLIENT_ID:front-app}
+            authorization-grant-type: authorization_code
+            scope: openid, profile
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            provider: keycloak
+        provider:
+          keycloak:
+            user-name-attribute: preferred_username
+            issuer-uri: ${KEYCLOAK_ISSUER_URI:http://host.docker.internal:8080/realms/bank-app}
 server:
-  port: ${APP_PORT:8083}
+  port: ${FRONT_APP_PORT:8083}
 
 management:
   endpoints:
@@ -30,3 +27,13 @@ management:
     health:
       show-details: always
 
+custom:
+  baseUrl:
+    api-gateway: ${GATEWAY_API:http://bank-api:31717}
+
+logging:
+  level:
+    reactor:
+      netty:
+        http:
+          client: trace

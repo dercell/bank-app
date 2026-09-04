@@ -3,23 +3,34 @@ spring:
     active: prod
   application:
     name: accounts
-  config:
-    import: "consul:"
-  cloud:
-    consul:
-      host: ${CONSUL_HOST:localhost}
-      port: ${CONSUL_PORT:8500}
-      discovery:
-        service-name: accounts
-      config:
-        watch:
-          delay: 3000
-          enabled: true
-          wait-time: 5
-        enabled: true
-        defaultContext: application
-        data-key: data
-        format: yaml
+  datasource:
+    url: ${ACCOUNT_DB_URL} #jdbc:postgresql://localhost:5432/bank_db?currentSchema=accounts
+    username: ${ACCOUNT_USERNAME} #postgres
+    password: ${ACCOUNT_PASSWORD} #postgres
+    driver-class-name: org.postgresql.Driver
+
+  liquibase:
+    enabled: true
+    default-schema: accounts
+    change-log: classpath:db/changelog/db.changelog-master.xml
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI} #http://host.docker.internal:8080/realms/bank-app
+
+      client:
+        registration:
+          keycloak:
+            client-id: ${KEYCLOAK_CLIENT_ID} #accounts-service
+            client-secret: ${KEYCLOAK_CLIENT_SECRET} #z4YSPCjeXtZWb5qkwaL0YOrRGs4TP2Go
+            authorization-grant-type: client_credentials
+            scope: openid
+        provider:
+          keycloak:
+            issuer-uri: ${KEYCLOAK_ISSUER_URI} #http://host.docker.internal:8080/realms/bank-app
+            #token-uri: ${KEYCLOAK_TOKEN_URI} # http://host.docker.internal:8080/realms/bank-app/protocol/openid-connect/token
 
 management:
   endpoints:
@@ -31,3 +42,7 @@ management:
       show-details: always
 server:
   port: ${APP_PORT:8081}
+
+custom:
+  baseUrl:
+    api-gateway: ${BANK_API_URL} #http://gateway

@@ -1,5 +1,0 @@
-# Patterns to ignore when building packages.
-docs/
-tests/
-ci/
-README.md

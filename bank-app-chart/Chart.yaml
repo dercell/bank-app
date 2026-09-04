@@ -26,8 +26,15 @@ dependencies:
   - name: postgresql
     version: "12.1.14"
     repository: oci://registry-1.docker.io/bitnamicharts
-    alias: bank-db
-  - name: keycloak
-    version: "26.6.3"
-    repository: file://charts/keycloak
-    alias: bank-keycloak
+  - name: accounts
+    version: "0.1.0"
+    repository: file://charts/accounts
+  - name: notification
+    version: "0.1.0"
+    repository: file://charts/notification
+  - name: cash
+    version: "0.1.0"
+    repository: file://charts/cash
+  - name: transfer
+    version: "0.1.0"
+    repository: file://charts/transfer

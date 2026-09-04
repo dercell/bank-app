@@ -75,9 +75,9 @@
 
 В проекте есть экспорт realm’а и тестовых пользователей:
 
-[bank-app-realm.json](bank-app-chart/files/keycloak/import/bank-app-realm.json)
+[bank-app-realm.json](common/keycloak/import/bank-app-realm.json)
 
-[bank-app-users-0.json](bank-app-chart/files/keycloak/import/bank-app-users-0.json)
+[bank-app-users-0.json](common/keycloak/import/bank-app-users-0.json)
 
 Он включает:
 

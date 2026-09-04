@@ -3,6 +3,7 @@ package ru.yandex.practicum.mybankfront.client;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import ru.yandex.practicum.mybankfront.model.AccountInfoDto;
 
 import java.time.LocalDate;
@@ -29,6 +30,9 @@ public class AccountClient {
             log.info("Account info :{}", acc);
 
             return acc;
+        } catch (WebClientResponseException e) {
+            log.error("WebClientResponseException in AccountClient getAccByLogin: {}", e.getMessage(), e);
+            throw e;
         } catch (Exception error) {
             log.error("Error while getting current user: {}", error.getMessage(), error);
             throw error;
