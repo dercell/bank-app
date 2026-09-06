@@ -1,11 +1,13 @@
 spring:
+  profiles:
+    active: prod
   application:
     name: notification
   security:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri:  ${KEYCLOAK_ISSUER_URI} #http://host.docker.internal:8080/realms/bank-app
+          issuer-uri:  ${KEYCLOAK_ISSUER_URI:http://host.docker.internal:8080/realms/bank-app}
 
 management:
   endpoints:

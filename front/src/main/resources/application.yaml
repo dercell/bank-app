@@ -30,10 +30,3 @@ management:
 custom:
   baseUrl:
     api-gateway: ${GATEWAY_API:http://bank-api:31717}
-
-logging:
-  level:
-    reactor:
-      netty:
-        http:
-          client: trace

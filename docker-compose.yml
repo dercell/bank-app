@@ -8,7 +8,6 @@ services:
       KC_DB_URL: jdbc:postgresql://host.docker.internal:30432/bank_db
       KC_DB_USERNAME: bank_admin
       KC_DB_PASSWORD: bank_admin
-#      KC_DB_SCHEMA: keycloak
     volumes:
       - ./common/keycloak/import:/opt/keycloak/data/import
     command:

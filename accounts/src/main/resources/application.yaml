@@ -4,9 +4,9 @@ spring:
   application:
     name: accounts
   datasource:
-    url: ${ACCOUNT_DB_URL} #jdbc:postgresql://localhost:5432/bank_db?currentSchema=accounts
-    username: ${ACCOUNT_USERNAME} #postgres
-    password: ${ACCOUNT_PASSWORD} #postgres
+    url: ${ACCOUNT_DB_URL:jdbc:postgresql://localhost:5432/bank_db?currentSchema=accounts}
+    username: ${ACCOUNT_USERNAME:postgres}
+    password: ${ACCOUNT_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
 
   liquibase:
@@ -18,7 +18,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: ${KEYCLOAK_ISSUER_URI} #http://host.docker.internal:8080/realms/bank-app
+          issuer-uri: ${KEYCLOAK_ISSUER_URI} #
 
       client:
         registration:
@@ -30,7 +30,6 @@ spring:
         provider:
           keycloak:
             issuer-uri: ${KEYCLOAK_ISSUER_URI} #http://host.docker.internal:8080/realms/bank-app
-            #token-uri: ${KEYCLOAK_TOKEN_URI} # http://host.docker.internal:8080/realms/bank-app/protocol/openid-connect/token
 
 management:
   endpoints:
