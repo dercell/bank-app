@@ -10,6 +10,6 @@ spec:
   containers:
     - name: wget
       image: busybox
-      command: ['wget']
-      args: ['{{ include "accounts.fullname" . }}:{{ .Values.service.port }}']
+      command: ['wget', '-q', '-O-']
+      args: ['{{ include "accounts.fullname" . }}:{{ .Values.service.port }}/actuator/health']
   restartPolicy: Never
