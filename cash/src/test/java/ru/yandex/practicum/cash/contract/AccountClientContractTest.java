@@ -12,6 +12,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import ru.yandex.practicum.cash.client.AccountClient;
 import ru.yandex.practicum.cash.config.ContractTestWebClientConfig;
+import ru.yandex.practicum.cash.dto.CashAction;
 
 import java.util.Map;
 
@@ -32,12 +33,12 @@ class AccountClientContractTest {
 
     @Test
     void successCharge() {
-        assertDoesNotThrow(() -> accountClient.chargeBalance("luke", "PUT", 5000));
+        assertDoesNotThrow(() -> accountClient.chargeBalance("luke", CashAction.PUT, 5000));
     }
 
     @Test
     void failCharge() {
-        WebClientResponseException wcre = assertThrows(WebClientResponseException.class, () -> accountClient.chargeBalance("han", "PUT", -1000));
+        WebClientResponseException wcre = assertThrows(WebClientResponseException.class, () -> accountClient.chargeBalance("han", CashAction.PUT, -1000));
         String errorMsg = wcre.getResponseBodyAs(Map.class).get("message").toString();
         assertEquals("chargeBalance.sum: должно быть не меньше 0", errorMsg);
     }

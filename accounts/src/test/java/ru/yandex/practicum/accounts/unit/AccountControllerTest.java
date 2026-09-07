@@ -11,6 +11,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.yandex.practicum.accounts.config.TestSecurityConfig;
 import ru.yandex.practicum.accounts.controller.AccountController;
+import ru.yandex.practicum.accounts.model.CashAction;
 import ru.yandex.practicum.accounts.model.entity.Account;
 import ru.yandex.practicum.accounts.model.dto.AccountDto;
 import ru.yandex.practicum.accounts.service.AccountsService;
@@ -130,7 +131,7 @@ class AccountControllerTest {
 
     @Test
     void chargeBalance_Success() throws Exception {
-        doNothing().when(accountService).chargeBalance("luke", "GET", 1000);
+        doNothing().when(accountService).chargeBalance("luke", CashAction.GET, 1000);
 
         mockMvc.perform(put("/accounts/charge/luke")
                         .param("action", "GET")
@@ -144,7 +145,7 @@ class AccountControllerTest {
     @Test
     void chargeBalance_Error() throws Exception {
         doThrow(new IllegalArgumentException("Сумма не может быть отрицательной"))
-                .when(accountService).chargeBalance("luke", "PUT", -100);
+                .when(accountService).chargeBalance("luke", CashAction.PUT, -100);
 
         mockMvc.perform(put("/accounts/charge/luke")
                         .param("action", "PUT")

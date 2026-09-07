@@ -9,6 +9,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.yandex.practicum.cash.client.AccountClient;
 import ru.yandex.practicum.cash.client.NotificationClient;
+import ru.yandex.practicum.cash.dto.CashAction;
 import ru.yandex.practicum.cash.service.CashService;
 
 import static org.mockito.Mockito.*;
@@ -33,23 +34,23 @@ class CashServiceTest {
     @Test
     void chargeSum_Deposit_Success() {
 
-        cashService.chargeSum(TEST_LOGIN, "PUT", TEST_SUM);
+        cashService.chargeSum(TEST_LOGIN, CashAction.PUT, TEST_SUM);
 
-        verify(accountClient).chargeBalance(TEST_LOGIN, "PUT", TEST_SUM);
+        verify(accountClient).chargeBalance(TEST_LOGIN, CashAction.PUT, TEST_SUM);
         verify(notificationClient).sendNotification("Положено 500 руб");
     }
 
     @Test
     void chargeSum_Withdraw_Success() {
-        cashService.chargeSum(TEST_LOGIN, "GET", TEST_SUM);
+        cashService.chargeSum(TEST_LOGIN, CashAction.GET, TEST_SUM);
 
-        verify(accountClient).chargeBalance(TEST_LOGIN, "GET", TEST_SUM);
+        verify(accountClient).chargeBalance(TEST_LOGIN, CashAction.GET, TEST_SUM);
         verify(notificationClient).sendNotification("Снято 500 руб");
     }
 
     @Test
     void chargeSum_InsufficientFunds_Error() {
-        String action = "GET";
+        CashAction action = CashAction.GET;
         int largeSum = 999999;
 
         doThrow(new RuntimeException("Недостаточно средств"))

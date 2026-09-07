@@ -1,6 +1,6 @@
 package ru.yandex.practicum.transfer.controller;
 
-import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Positive;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -28,7 +28,7 @@ public class TransferController {
     public ServiceResultDto transfer(
             @RequestParam("from") String fromLogin,
             @RequestParam("to") String toLogin,
-            @RequestParam("sum") @Min(0) int sum
+            @RequestParam("sum") @Positive int sum
     ) {
         return transferSerivce.makeTransfer(fromLogin, toLogin, sum);
     }

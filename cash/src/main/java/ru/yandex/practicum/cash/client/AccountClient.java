@@ -3,6 +3,7 @@ package ru.yandex.practicum.cash.client;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import ru.yandex.practicum.cash.dto.CashAction;
 
 @Slf4j
 @Component
@@ -14,7 +15,7 @@ public class AccountClient {
         this.webClient = webClient;
     }
 
-    public void chargeBalance(String login, String action, int sum) {
+    public void chargeBalance(String login, CashAction action, int sum) {
         webClient.put().uri(uriBuilder -> uriBuilder
                         .path("/accounts/charge/{login}")
                         .queryParam("action", action)

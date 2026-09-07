@@ -5,7 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.accounts.client.NotificationClient;
+import ru.yandex.practicum.accounts.exceptions.AccountNotExists;
+import ru.yandex.practicum.accounts.exceptions.InvalidCashAction;
 import ru.yandex.practicum.accounts.exceptions.NotEnoughMoneyException;
+import ru.yandex.practicum.accounts.exceptions.SelfTransferException;
 import ru.yandex.practicum.accounts.model.entity.Account;
 import ru.yandex.practicum.accounts.model.dto.AccountDto;
 import ru.yandex.practicum.accounts.model.dto.AccountStripped;
@@ -25,7 +28,7 @@ public class AccountsService {
     private final NotificationClient notificationClient;
 
     public Account getAccountByLogin(String login) {
-        return accountRepository.getAccountByLogin(login).orElse(Account.builder().login(login).build());
+        return accountRepository.getAccountByLogin(login).orElseThrow(() -> new AccountNotExists("Аккаунта " + login + " не существует"));
     }
 
     public AccountDto getAccountInfo(String login) {
@@ -72,6 +75,11 @@ public class AccountsService {
     public void transfer(String fromLogin, String toLogin, int value) {
         Account from = getAccountByLogin(fromLogin);
         Account to = getAccountByLogin(toLogin);
+
+        if (fromLogin.equals(toLogin)) {
+            throw new SelfTransferException("Нельзя переводить самому себе");
+        }
+
         if (value > from.getBalance()) {
             throw new NotEnoughMoneyException("Недостаточно средств на счету");
         }
@@ -82,20 +90,25 @@ public class AccountsService {
         accountRepository.saveAll(List.of(from, to));
     }
 
-    public void chargeBalance(String login, String action, long sum) {
+    public void chargeBalance(String login, CashAction action, long sum) {
         Account curAccount = getAccountByLogin(login);
         String msg;
-        if (action.equals(CashAction.GET.toString()) && sum > curAccount.getBalance()) {
-            throw new NotEnoughMoneyException("Недостаточно средств на счету");
+
+        switch (action) {
+            case GET -> {
+                if (sum > curAccount.getBalance()) {
+                    throw new NotEnoughMoneyException("Недостаточно средств на счету");
+                }
+                curAccount.setBalance(curAccount.getBalance() - sum);
+                msg = "Снято %d руб".formatted(sum);
+            }
+            case PUT -> {
+                curAccount.setBalance(sum + curAccount.getBalance());
+                msg = "Положено %d руб".formatted(curAccount.getBalance());
+            }
+            default -> throw new InvalidCashAction("Недопустимая операция");
         }
 
-        if (action.equals(CashAction.GET.toString())) {
-            curAccount.setBalance(curAccount.getBalance() - sum);
-            msg = "Снято %d руб".formatted(sum);
-        } else {
-            curAccount.setBalance(sum + curAccount.getBalance());
-            msg = "Положено %d руб".formatted(curAccount.getBalance());
-        }
         accountRepository.save(curAccount);
         log.info(msg);
     }

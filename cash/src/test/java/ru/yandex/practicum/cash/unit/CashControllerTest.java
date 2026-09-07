@@ -10,6 +10,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.yandex.practicum.cash.config.TestSecurityConfig;
 import ru.yandex.practicum.cash.controller.CashController;
+import ru.yandex.practicum.cash.dto.CashAction;
 import ru.yandex.practicum.cash.service.CashService;
 
 import java.util.List;
@@ -34,7 +35,7 @@ class CashControllerTest {
     private CashService cashService;
 
     private static final String LOGIN = "luke";
-    private static final String ACTION = "GET";
+    private static final CashAction ACTION = CashAction.GET;
     private static final int SUM = 1000;
 
     @Test
@@ -42,7 +43,7 @@ class CashControllerTest {
         doNothing().when(cashService).chargeSum(LOGIN, ACTION, SUM);
 
         mockMvc.perform(put("/cash/{login}", LOGIN)
-                        .param("action", ACTION)
+                        .param("action", ACTION.toString())
                         .param("sum", String.valueOf(SUM))
                         .with(jwt().jwt(jwt -> jwt
                                 .claim("realm_access", List.of("USER", "CASH_WRITE"))
@@ -59,7 +60,7 @@ class CashControllerTest {
                 .when(cashService).chargeSum(LOGIN, ACTION, -100);
 
         mockMvc.perform(put("/cash/{login}", LOGIN)
-                        .param("action", ACTION)
+                        .param("action", ACTION.toString())
                         .param("sum", "-100")
                         .with(jwt().jwt(jwt -> jwt
                                 .claim("realm_access", Map.of("roles", List.of("USER", "CASH_WRITE")))
@@ -71,10 +72,10 @@ class CashControllerTest {
     @Test
     void chargeSum_Forbidden() throws Exception {
         mockMvc.perform(put("/cash/{login}", LOGIN)
-                        .param("action", ACTION)
+                        .param("action", ACTION.toString())
                         .param("sum", String.valueOf(SUM)))
                 .andExpect(status().isUnauthorized());
 
-        verify(cashService, never()).chargeSum(anyString(), anyString(), anyInt());
+        verify(cashService, never()).chargeSum(anyString(), any(CashAction.class), anyInt());
     }
 }

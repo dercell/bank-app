@@ -9,6 +9,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.yandex.practicum.accounts.client.NotificationClient;
 import ru.yandex.practicum.accounts.exceptions.NotEnoughMoneyException;
+import ru.yandex.practicum.accounts.model.CashAction;
 import ru.yandex.practicum.accounts.model.entity.Account;
 import ru.yandex.practicum.accounts.repository.AccountRepository;
 import ru.yandex.practicum.accounts.service.AccountsService;
@@ -146,7 +147,7 @@ class AccountsServiceTest {
     void chargeBalance_Deposit_Success() {
         when(accountRepository.getAccountByLogin(TEST_LOGIN)).thenReturn(Optional.of(testAccount));
 
-        accountsService.chargeBalance(TEST_LOGIN, "PUT", 300L);
+        accountsService.chargeBalance(TEST_LOGIN, CashAction.PUT, 300L);
 
         assertThat(testAccount.getBalance()).isEqualTo(1300L);
         verify(accountRepository).save(testAccount);
@@ -156,7 +157,7 @@ class AccountsServiceTest {
     void chargeBalance_Withdraw_Success() {
         when(accountRepository.getAccountByLogin(TEST_LOGIN)).thenReturn(Optional.of(testAccount));
 
-        accountsService.chargeBalance(TEST_LOGIN, "GET", 300L);
+        accountsService.chargeBalance(TEST_LOGIN, CashAction.GET, 300L);
 
         assertThat(testAccount.getBalance()).isEqualTo(700L);
         verify(accountRepository).save(testAccount);
@@ -166,7 +167,7 @@ class AccountsServiceTest {
     void chargeBalance_InsufficientFunds_Error() {
         when(accountRepository.getAccountByLogin(TEST_LOGIN)).thenReturn(Optional.of(testAccount));
 
-        assertThatThrownBy(() -> accountsService.chargeBalance(TEST_LOGIN, "GET", 2000L))
+        assertThatThrownBy(() -> accountsService.chargeBalance(TEST_LOGIN, CashAction.GET, 2000L))
                 .isInstanceOf(NotEnoughMoneyException.class)
                 .hasMessage("Недостаточно средств на счету");
     }
