@@ -14,7 +14,7 @@ public class TransferClient {
     private final WebClient webClient;
 
     public TransferClient(WebClient webClient) {
-        this.webClient = webClient;
+        this.webClient = webClient.mutate().baseUrl("http://localhost:8085").build();
     }
 
     public ServiceResultDto transfer(String fromLogin, String toLogin, int sum) {

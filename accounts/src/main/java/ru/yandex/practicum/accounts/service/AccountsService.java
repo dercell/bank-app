@@ -9,13 +9,9 @@ import ru.yandex.practicum.accounts.exceptions.AccountNotExists;
 import ru.yandex.practicum.accounts.exceptions.InvalidCashAction;
 import ru.yandex.practicum.accounts.exceptions.NotEnoughMoneyException;
 import ru.yandex.practicum.accounts.exceptions.SelfTransferException;
-import ru.yandex.practicum.accounts.model.dto.AccountDto;
-import ru.yandex.practicum.accounts.model.dto.UserProfileDto;
+import ru.yandex.practicum.accounts.model.dto.*;
 import ru.yandex.practicum.accounts.model.entity.BankAccount;
 import ru.yandex.practicum.accounts.model.entity.UserProfile;
-import ru.yandex.practicum.accounts.model.dto.PageInfoDto;
-import ru.yandex.practicum.accounts.model.dto.UserAccountInfoDto;
-import ru.yandex.practicum.accounts.model.CashAction;
 import ru.yandex.practicum.accounts.repository.BankAccountRepository;
 import ru.yandex.practicum.accounts.repository.UserProfileRepository;
 
@@ -23,6 +19,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -55,14 +52,13 @@ public class AccountsService {
                 pageInfoDto.setUserProfileDto(upd);
 
                 pageInfoDto.setCurAccounts(accountDtos);
-            } else {
-                UserAccountInfoDto uaid = new UserAccountInfoDto(acc.getLogin(), acc.getUsername(), accountDtos);
-                otherAccs.add(uaid);
             }
 
+            UserAccountInfoDto uaid = new UserAccountInfoDto(acc.getLogin(), acc.getUsername(), accountDtos);
+            otherAccs.add(uaid);
         }
 
-        if(pageInfoDto.getUserProfileDto() == null){
+        if (pageInfoDto.getUserProfileDto() == null) {
             throw new AccountNotExists("Профиль пользователя " + login + " отсутствует");
         }
 
@@ -114,12 +110,13 @@ public class AccountsService {
     }
 
     @Transactional
-    public void chargeBalance(String fromAcc, CashAction action, BigDecimal sum) {
-        BankAccount curAccount = bankAccountRepository.getBankAccountsByAccountNum(fromAcc)
-                .orElseThrow(() -> new IllegalStateException("Счет не найден: " + fromAcc));
+    public void chargeBalance(CashOpDto body) {
+        BankAccount curAccount = bankAccountRepository.getBankAccountsByAccountNum(body.getAccNumber())
+                .orElseThrow(() -> new IllegalStateException("Счет не найден: " + body.getAccNumber()));
         String msg;
+        BigDecimal sum = body.getSum();
 
-        switch (action) {
+        switch (body.getAction()) {
             case GET -> {
                 if (curAccount.getBalance().compareTo(sum) < 0) {
                     throw new NotEnoughMoneyException("Недостаточно средств на счету");
@@ -138,5 +135,23 @@ public class AccountsService {
         log.info(msg);
     }
 
+    @Transactional
+    public void createProfile(ProfileCreateDto profile) {
+        UUID accNum = UUID.randomUUID();
 
+        BankAccount ba = BankAccount.builder()
+                .accountNum(accNum.toString())
+                .login(profile.getLogin())
+                .balance(new BigDecimal(0))
+                .build();
+
+        UserProfile up = UserProfile.builder()
+                .login(profile.getLogin())
+                .username(profile.getUsername())
+                .birthDate(profile.getBirthDate())
+                .accountList(List.of(ba))
+                .build();
+
+        userProfileRepository.save(up);
+    }
 }

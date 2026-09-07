@@ -21,7 +21,7 @@ spring:
 
 custom:
   baseUrl:
-    api-gateway: ${BANK_API_URL:http://bank-api}
+    api-gateway: ${BANK_API_URL:http://localhost:8081}
 
 management:
   endpoints:

@@ -31,7 +31,7 @@ public class UserProfile {
     private LocalDate birthDate;
 
     @Builder.Default
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id")
     private List<BankAccount> accountList = new ArrayList<>();
 

@@ -8,15 +8,12 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
-import ru.yandex.practicum.mybankfront.model.AccountDto;
-import ru.yandex.practicum.mybankfront.model.AccountInfoDto;
-import ru.yandex.practicum.mybankfront.model.CashAction;
-import ru.yandex.practicum.mybankfront.model.ServiceResultDto;
+import ru.yandex.practicum.mybankfront.model.*;
 import ru.yandex.practicum.mybankfront.service.AccountService;
 import ru.yandex.practicum.mybankfront.service.CashService;
 import ru.yandex.practicum.mybankfront.service.TransferService;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -47,10 +44,21 @@ public class MainController {
                              @AuthenticationPrincipal OidcUser oidcUser) {
 
         String login = oidcUser.getName();
-        AccountInfoDto acc = accountService.getAccByLogin(login);
+        PageInfoDto acc = accountService.getAccByLogin(login);
         fillModel(model, acc, null, null);
 
         return "main";
+    }
+
+    @PostMapping("/account/register")
+    public String getAccount(@RequestParam("username") String name,
+                             @RequestParam("birthdate") LocalDate birthdate,
+                             @AuthenticationPrincipal OidcUser oidcUser) {
+
+        String login = oidcUser.getName();
+        accountService.registerUser(login, name, birthdate);
+
+        return "redirect:/account";
     }
 
     @PostMapping("/account")
@@ -62,7 +70,7 @@ public class MainController {
     ) {
 
         String login = oidcUser.getName();
-        AccountInfoDto acc = accountService.updateAccount(login, name, birthdate);
+        PageInfoDto acc = accountService.updateAccount(login, name, birthdate);
         fillModel(model, acc, "Пользователь изменен", null);
 
         return "main";
@@ -72,24 +80,17 @@ public class MainController {
     @PostMapping("/cash")
     public String editCash(
             Model model,
-            @RequestParam("value") int value,
+            @RequestParam("value") BigDecimal value,
             @RequestParam("action") CashAction action,
+            @RequestParam("accountNumber") String accountNumber,
             @AuthenticationPrincipal OidcUser oidcUser
     ) {
-        String info = null;
-        List<String> error = null;
         String login = oidcUser.getName();
-        try {
-            cashService.editCash(login, action, value);
-            info = action == CashAction.GET ? "Снято %d руб".formatted(value) : "Положено %d руб".formatted(value);
-        } catch (WebClientResponseException wcre) {
-            error = List.of(wcre.getResponseBodyAsString());
-        } catch (Exception ex) {
-            error = List.of(ex.getMessage());
-        } finally {
-            AccountInfoDto acc = accountService.getAccByLogin(login);
-            fillModel(model, acc, info, error);
-        }
+
+        cashService.editCash(accountNumber, action, value);
+        String info = action == CashAction.GET ? "Снято %.2f руб".formatted(value) : "Положено %.2f руб".formatted(value);
+        PageInfoDto acc = accountService.getAccByLogin(login);
+        fillModel(model, acc, info, null);
 
         return "main";
     }
@@ -104,21 +105,22 @@ public class MainController {
 
         String fromLogin = oidcUser.getName();
         ServiceResultDto info = transferService.makeTransfer(fromLogin, toLogin, value);
-        AccountInfoDto acc = accountService.getAccByLogin(fromLogin);
+        PageInfoDto acc = accountService.getAccByLogin(fromLogin);
         fillModel(model, acc, info.getMessage(), null);
 
         return "main";
     }
 
-    private static void fillModel(Model model, AccountInfoDto dto, String info, List<String> error) {
-        String name = Optional.of(dto.getCurAccount()).map(AccountDto::getUsername).orElse(null);
-        String birthDate = Optional.of(dto.getCurAccount()).map(AccountDto::getBirthDate)
+    private static void fillModel(Model model, PageInfoDto dto, String info, List<String> error) {
+        String name = Optional.ofNullable(dto.getUserProfileDto()).map(UserProfileDto::getUsername).orElse(null);
+
+        String birthDate = Optional.ofNullable(dto.getUserProfileDto()).map(UserProfileDto::getBirthDate)
                 .map(bdate -> bdate.format(DateTimeFormatter.ISO_DATE)).orElse(null);
 
         model.addAttribute("name", name);
         model.addAttribute("birthdate", birthDate);
-        model.addAttribute("sum", dto.getCurAccount().getBalance());
-        model.addAttribute("accounts", dto.getAccounts());
+        model.addAttribute("user_accounts", dto.getCurAccounts());
+        model.addAttribute("recipients", dto.getAccounts());
         model.addAttribute("info", info);
         model.addAttribute("errors", error);
     }

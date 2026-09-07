@@ -18,18 +18,18 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: ${KEYCLOAK_ISSUER_URI} #
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://host.docker.internal:8080/realms/bank-app}
 
       client:
         registration:
           keycloak:
-            client-id: ${KEYCLOAK_CLIENT_ID} #accounts-service
-            client-secret: ${KEYCLOAK_CLIENT_SECRET} #z4YSPCjeXtZWb5qkwaL0YOrRGs4TP2Go
+            client-id: ${KEYCLOAK_CLIENT_ID:accounts-service}
+            client-secret: ${KEYCLOAK_CLIENT_SECRET:z4YSPCjeXtZWb5qkwaL0YOrRGs4TP2Go}
             authorization-grant-type: client_credentials
             scope: openid
         provider:
           keycloak:
-            issuer-uri: ${KEYCLOAK_ISSUER_URI} #http://host.docker.internal:8080/realms/bank-app
+            issuer-uri: ${KEYCLOAK_ISSUER_URI:http://host.docker.internal:8080/realms/bank-app}
 
 management:
   endpoints:
@@ -44,4 +44,4 @@ server:
 
 custom:
   baseUrl:
-    api-gateway: ${BANK_API_URL} #http://gateway
+    api-gateway: ${BANK_API_URL:http://localhost:8084} #http://gateway

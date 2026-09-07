@@ -6,8 +6,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.accounts.model.CashAction;
+import ru.yandex.practicum.accounts.model.dto.CashOpDto;
 import ru.yandex.practicum.accounts.model.dto.PageInfoDto;
+import ru.yandex.practicum.accounts.model.dto.ProfileCreateDto;
 import ru.yandex.practicum.accounts.model.dto.ServiceResultDto;
 import ru.yandex.practicum.accounts.service.AccountsService;
 
@@ -29,6 +30,13 @@ public class AccountController {
         return accountService.getAccountInfo(login);
     }
 
+    @PostMapping("/create")
+    @PreAuthorize("hasRole('USER') && hasAuthority('account.write')")
+    public ResponseEntity<Void> updateAccount(@RequestBody ProfileCreateDto profile) {
+        accountService.createProfile(profile);
+        return ResponseEntity.noContent().build();
+    }
+
     @PutMapping("/info/{login}")
     @PreAuthorize("hasRole('USER') && hasAuthority('account.write')")
     public PageInfoDto updateAccount(@PathVariable("login") String login,
@@ -37,13 +45,11 @@ public class AccountController {
         return accountService.updateAccount(login, name, birthdate);
     }
 
-    @PutMapping("/charge/{login}")
+    @PutMapping("/charge")
     @PreAuthorize("hasRole('SERVICE') && hasAuthority('account.write')")
-    public ResponseEntity<Void> chargeBalance(@PathVariable("login") String login,
-                                              @RequestParam("action") CashAction action,
-                                              @RequestParam("sum") @Positive BigDecimal sum) {
+    public ResponseEntity<Void> chargeBalance(@RequestBody CashOpDto body) {
 
-        accountService.chargeBalance(login, action, sum);
+        accountService.chargeBalance(body);
         return ResponseEntity.noContent().build();
     }
 

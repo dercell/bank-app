@@ -1,12 +1,11 @@
 package ru.yandex.practicum.cash.controller;
 
-import jakarta.validation.constraints.Positive;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.cash.dto.CashAction;
+import ru.yandex.practicum.cash.dto.CashOpDto;
 import ru.yandex.practicum.cash.service.CashService;
 
 
@@ -22,15 +21,13 @@ public class CashController {
         this.cashService = cashService;
     }
 
-    @PutMapping("/{login}")
+    @PutMapping
     @PreAuthorize("hasRole('USER') && hasAuthority('cash.write')")
     public ResponseEntity<Void> chargeSum(
-            @PathVariable("login") String login,
-            @RequestParam("action") CashAction action,
-            @RequestParam("sum") @Positive Integer sum
-    ) {
-        log.info("Get request for {} {} from {} ", action, sum, login);
-        cashService.chargeSum(login, action, sum);
+            @RequestBody CashOpDto body
+            ) {
+        log.info("Get request for {} ", body);
+        cashService.chargeSum(body);
         return ResponseEntity.noContent().build();
     }
 

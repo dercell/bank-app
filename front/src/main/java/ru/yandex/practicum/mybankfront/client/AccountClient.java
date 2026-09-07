@@ -4,6 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import ru.yandex.practicum.mybankfront.model.PageInfoDto;
+import ru.yandex.practicum.mybankfront.model.ProfileCreateDto;
 import ru.yandex.practicum.mybankfront.model.AccountInfoDto;
 
 import java.time.LocalDate;
@@ -16,16 +18,16 @@ public class AccountClient {
     private final WebClient webClient;
 
     public AccountClient(WebClient webClient) {
-        this.webClient = webClient;
+        this.webClient = webClient.mutate().baseUrl("http://localhost:8081").build();
     }
 
-    public AccountInfoDto getAccByLogin(String login) {
+    public PageInfoDto getAccByLogin(String login) {
         try {
             log.info("Request for user {}", login);
-            AccountInfoDto acc = webClient.get()
+            PageInfoDto acc = webClient.get()
                     .uri("/accounts/info/{login}", login)
                     .retrieve()
-                    .bodyToMono(AccountInfoDto.class)
+                    .bodyToMono(PageInfoDto.class)
                     .block();
             log.info("Account info :{}", acc);
 
@@ -39,17 +41,17 @@ public class AccountClient {
         }
     }
 
-    public AccountInfoDto updateAccount(String login, String username, LocalDate birthdate) {
+    public PageInfoDto updateAccount(String login, String username, LocalDate birthdate) {
         try {
             log.info("Request for account update login: {}, username: {}, birthdate: {}", login, username, birthdate.format(DateTimeFormatter.ISO_DATE));
-            AccountInfoDto acc = webClient.put()
+            PageInfoDto acc = webClient.put()
                     .uri(uriBuilder -> uriBuilder
                             .path("/accounts/info/{login}")
                             .queryParam("username", username)
                             .queryParam("birthdate", birthdate)
                             .build(login))
                     .retrieve()
-                    .bodyToMono(AccountInfoDto.class)
+                    .bodyToMono(PageInfoDto.class)
                     .block();
             log.info("Account info :{}", acc);
             return acc;
@@ -60,4 +62,23 @@ public class AccountClient {
         }
     }
 
+    public void createAccount(ProfileCreateDto body) {
+        try {
+            log.info("Request for creating user {}", body);
+            webClient.post()
+                    .uri("/accounts/create")
+                    .bodyValue(body)
+                    .retrieve()
+                    .bodyToMono(AccountInfoDto.class)
+                    .block();
+            log.info("Account {} created", body);
+
+        } catch (WebClientResponseException e) {
+            log.error("WebClientResponseException in AccountClient createAccount: {}", e.getMessage(), e);
+            throw e;
+        } catch (Exception error) {
+            log.error("Error while creating current user: {}", error.getMessage(), error);
+            throw error;
+        }
+    }
 }
