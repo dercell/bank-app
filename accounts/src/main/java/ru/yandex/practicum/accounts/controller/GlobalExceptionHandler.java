@@ -14,18 +14,18 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ServiceResultDto> handleBusinessException(BusinessException be) {
         log.error("Business error: {}", be.getMessage(), be);
-        return ResponseEntity.badRequest().body(new ServiceResultDto(be.getClass().getName(), be.getMessage()));
+        return ResponseEntity.badRequest().body(new ServiceResultDto(be.getClass().getSimpleName(), be.getMessage()));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ServiceResultDto> handleIllegalArgument(IllegalArgumentException ex) {
         log.error("Bad request data: {}", ex.getMessage(), ex);
-        return ResponseEntity.badRequest().body(new ServiceResultDto(ex.getMessage()));
+        return ResponseEntity.badRequest().body(new ServiceResultDto(ex.getClass().getSimpleName(), ex.getMessage()));
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ServiceResultDto> handler500(Exception ex) {
         log.error("Internal server error: {}", ex.getMessage(), ex);
-        return ResponseEntity.internalServerError().body(new ServiceResultDto(ex.getMessage()));
+        return ResponseEntity.internalServerError().body(new ServiceResultDto(ex.getClass().getSimpleName(), ex.getMessage()));
     }
 }

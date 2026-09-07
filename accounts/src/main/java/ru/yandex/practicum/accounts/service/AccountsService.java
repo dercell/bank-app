@@ -12,13 +12,11 @@ import ru.yandex.practicum.accounts.exceptions.SelfTransferException;
 import ru.yandex.practicum.accounts.model.dto.AccountDto;
 import ru.yandex.practicum.accounts.model.dto.UserProfileDto;
 import ru.yandex.practicum.accounts.model.entity.BankAccount;
-import ru.yandex.practicum.accounts.model.entity.OperationLog;
 import ru.yandex.practicum.accounts.model.entity.UserProfile;
 import ru.yandex.practicum.accounts.model.dto.PageInfoDto;
 import ru.yandex.practicum.accounts.model.dto.UserAccountInfoDto;
 import ru.yandex.practicum.accounts.model.CashAction;
 import ru.yandex.practicum.accounts.repository.BankAccountRepository;
-import ru.yandex.practicum.accounts.repository.OperationLogRepository;
 import ru.yandex.practicum.accounts.repository.UserProfileRepository;
 
 import java.math.BigDecimal;
@@ -33,7 +31,6 @@ public class AccountsService {
 
     private final UserProfileRepository userProfileRepository;
     private final BankAccountRepository bankAccountRepository;
-    private final OperationLogRepository operationLogRepository;
 
     private final NotificationClient notificationClient;
 
@@ -64,6 +61,11 @@ public class AccountsService {
             }
 
         }
+
+        if(pageInfoDto.getUserProfileDto() == null){
+            throw new AccountNotExists("Профиль пользователя " + login + " отсутствует");
+        }
+
         pageInfoDto.setAccounts(otherAccs);
 
         return pageInfoDto;
@@ -109,13 +111,6 @@ public class AccountsService {
 
         bankAccountRepository.saveAll(List.of(from, to));
 
-        OperationLog ol = OperationLog.builder()
-                .operationType("TRANSFER")
-                .amount(value)
-                .initiator(fromAcc).target(toAcc)
-                .build();
-
-        operationLogRepository.save(ol);
     }
 
     @Transactional

@@ -15,6 +15,7 @@
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
+            <column name="user_id" type="BIGINT"/>
             <column name="account_num" type="VARCHAR(100)" defaultValueComputed="gen_random_uuid()">
                 <constraints nullable="false" unique="true"/>
             </column>

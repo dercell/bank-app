@@ -10,16 +10,20 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import ru.yandex.practicum.accounts.client.NotificationClient;
 import ru.yandex.practicum.accounts.exceptions.NotEnoughMoneyException;
 import ru.yandex.practicum.accounts.model.CashAction;
-import ru.yandex.practicum.accounts.model.entity.Account;
-import ru.yandex.practicum.accounts.repository.AccountRepository;
+import ru.yandex.practicum.accounts.model.entity.BankAccount;
+import ru.yandex.practicum.accounts.model.entity.UserProfile;
+import ru.yandex.practicum.accounts.repository.BankAccountRepository;
+import ru.yandex.practicum.accounts.repository.UserProfileRepository;
 import ru.yandex.practicum.accounts.service.AccountsService;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @Tag("unit")
@@ -28,55 +32,74 @@ import static org.mockito.Mockito.*;
 class AccountsServiceTest {
 
     @Mock
-    private AccountRepository accountRepository;
+    private UserProfileRepository userProfileRepository;
+
+    @Mock
+    private BankAccountRepository bankAccountRepository;
 
     @Mock
     private NotificationClient notificationClient;
 
+
     @InjectMocks
     private AccountsService accountsService;
 
-    private Account testAccount;
+    private UserProfile userProfile;
+    private BankAccount bankAccount;
     private static final String TEST_LOGIN = "luke";
+    private static final String TEST_ACC_NUM = "abc";
     private static final String TEST_NAME = "Luke Skywalker";
     private static final LocalDate TEST_BIRTHDATE = LocalDate.of(1990, 1, 15);
 
     @BeforeEach
     void setUp() {
-        testAccount = Account.builder()
+        userProfile = UserProfile.builder()
                 .login(TEST_LOGIN)
                 .username(TEST_NAME)
                 .birthDate(TEST_BIRTHDATE)
-                .balance(1000L)
                 .build();
+
+        bankAccount = BankAccount.builder()
+                .id(1L).accountNum(TEST_ACC_NUM).login(TEST_LOGIN).balance(new BigDecimal(100))
+                .build();
+
+        userProfile.setAccountList(List.of(bankAccount));
+
     }
 
     @Test
     void getAccountByLogin_Success() {
-        when(accountRepository.getAccountByLogin(TEST_LOGIN)).thenReturn(Optional.of(testAccount));
+        when(userProfileRepository.getAccountByLogin(TEST_LOGIN)).thenReturn(Optional.of(userProfile));
 
-        Account result = accountsService.getAccountByLogin(TEST_LOGIN);
+        UserProfile result = accountsService.getAccountByLogin(TEST_LOGIN);
 
         assertThat(result).isNotNull();
         assertThat(result.getLogin()).isEqualTo(TEST_LOGIN);
-        verify(accountRepository).getAccountByLogin(TEST_LOGIN);
+        verify(userProfileRepository).getAccountByLogin(TEST_LOGIN);
     }
 
     @Test
     void getAccountInfo_Success() {
-        Account anotherAccount = Account.builder()
-                .login("han")
-                .username("Han Solo")
+
+        BankAccount hanAcc = BankAccount.builder()
+                .id(2L).accountNum("qwe").login("han").balance(new BigDecimal(200))
                 .build();
 
-        when(accountRepository.findAll()).thenReturn(List.of(testAccount, anotherAccount));
+        UserProfile anotherAccount = UserProfile.builder()
+                .login("han")
+                .username("Han Solo")
+                .accountList(List.of(hanAcc))
+                .build();
+
+        when(userProfileRepository.findAll()).thenReturn(List.of(userProfile, anotherAccount));
 
         var result = accountsService.getAccountInfo(TEST_LOGIN);
 
         assertThat(result).isNotNull();
-        assertThat(result.getCurAccount()).isEqualTo(testAccount);
+        assertEquals(TEST_LOGIN, result.getUserProfileDto().getLogin());
+        assertEquals("han",result.getAccounts().getFirst().getLogin());
         assertThat(result.getAccounts()).hasSize(1);
-        verify(accountRepository).findAll();
+        verify(userProfileRepository).findAll();
     }
 
     @Test
@@ -84,21 +107,21 @@ class AccountsServiceTest {
         String newName = "Luke Starkiller";
         LocalDate newBirthdate = LocalDate.of(1985, 5, 10);
 
-        when(accountRepository.getAccountByLogin(TEST_LOGIN)).thenReturn(Optional.of(testAccount));
-        when(accountRepository.save(any(Account.class))).thenReturn(testAccount);
-        when(accountRepository.findAll()).thenReturn(List.of(testAccount));
+        when(userProfileRepository.getAccountByLogin(TEST_LOGIN)).thenReturn(Optional.of(userProfile));
+        when(userProfileRepository.save(any(UserProfile.class))).thenReturn(userProfile);
+        when(userProfileRepository.findAll()).thenReturn(List.of(userProfile));
 
         var result = accountsService.updateAccount(TEST_LOGIN, newName, newBirthdate);
 
         assertThat(result).isNotNull();
-        assertThat(result.getCurAccount().getUsername()).isEqualTo(newName);
-        verify(accountRepository).save(testAccount);
+        assertThat(result.getUserProfileDto().getUsername()).isEqualTo(newName);
+        verify(userProfileRepository).save(userProfile);
         verify(notificationClient).sendNotification(anyString());
     }
 
     @Test
     void updateAccount_EmptyName_Error() {
-        when(accountRepository.getAccountByLogin(TEST_LOGIN)).thenReturn(Optional.of(testAccount));
+        when(userProfileRepository.getAccountByLogin(TEST_LOGIN)).thenReturn(Optional.of(userProfile));
 
         assertThatThrownBy(() -> accountsService.updateAccount(TEST_LOGIN, "", TEST_BIRTHDATE))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -108,7 +131,7 @@ class AccountsServiceTest {
     @Test
     void updateAccount_UnderAge_Error() {
         LocalDate underageDate = LocalDate.now().minusYears(17);
-        when(accountRepository.getAccountByLogin(TEST_LOGIN)).thenReturn(Optional.of(testAccount));
+        when(userProfileRepository.getAccountByLogin(TEST_LOGIN)).thenReturn(Optional.of(userProfile));
 
         assertThatThrownBy(() -> accountsService.updateAccount(TEST_LOGIN, TEST_NAME, underageDate))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -117,57 +140,67 @@ class AccountsServiceTest {
 
     @Test
     void transfer_Success() {
-        Account fromAccount = Account.builder().login("from").balance(1000L).build();
-        Account toAccount = Account.builder().login("to").balance(200L).build();
+        String fromAcc = "qwe";
+        String toAcc = "asd";
+        BankAccount fromAccount = BankAccount.builder()
+                .id(1L).accountNum(fromAcc).login(TEST_LOGIN).balance(new BigDecimal(1000))
+                .build();
+        BankAccount toAccount = BankAccount.builder()
+                .id(2L).accountNum(toAcc).login(TEST_LOGIN).balance(new BigDecimal(200))
+                .build();
 
-        when(accountRepository.getAccountByLogin("from")).thenReturn(Optional.of(fromAccount));
-        when(accountRepository.getAccountByLogin("to")).thenReturn(Optional.of(toAccount));
+        when(bankAccountRepository.getBankAccountsByAccountNum(fromAcc)).thenReturn(Optional.of(fromAccount));
+        when(bankAccountRepository.getBankAccountsByAccountNum(toAcc)).thenReturn(Optional.of(toAccount));
 
-        accountsService.transfer("from", "to", 500);
+        accountsService.transfer(fromAcc, toAcc, BigDecimal.valueOf(500));
 
-        assertThat(fromAccount.getBalance()).isEqualTo(500L);
-        assertThat(toAccount.getBalance()).isEqualTo(700L);
-        verify(accountRepository).saveAll(List.of(fromAccount, toAccount));
+        assertEquals(0, fromAccount.getBalance().compareTo(BigDecimal.valueOf(500)));
+        assertEquals(0, toAccount.getBalance().compareTo(BigDecimal.valueOf(700)));
+        verify(bankAccountRepository).saveAll(List.of(fromAccount, toAccount));
     }
 
     @Test
     void transfer_InsufficientFunds_Error() {
-        Account fromAccount = Account.builder().login("from").balance(100L).build();
-        Account toAccount = Account.builder().login("to").balance(200L).build();
+        String fromAcc = "qwe";
+        String toAcc = "asd";
+        BankAccount fromAccount = BankAccount.builder()
+                .id(1L).accountNum(fromAcc).login(TEST_LOGIN).balance(new BigDecimal(100))
+                .build();
+        BankAccount toAccount = BankAccount.builder()
+                .id(2L).accountNum(toAcc).login(TEST_LOGIN).balance(new BigDecimal(100))
+                .build();
 
-        when(accountRepository.getAccountByLogin("from")).thenReturn(Optional.of(fromAccount));
-        when(accountRepository.getAccountByLogin("to")).thenReturn(Optional.of(toAccount));
+        when(bankAccountRepository.getBankAccountsByAccountNum(fromAcc)).thenReturn(Optional.of(fromAccount));
+        when(bankAccountRepository.getBankAccountsByAccountNum(toAcc)).thenReturn(Optional.of(toAccount));
 
-        assertThatThrownBy(() -> accountsService.transfer("from", "to", 500))
+        assertThatThrownBy(() -> accountsService.transfer(fromAcc, toAcc, BigDecimal.valueOf(500)))
                 .isInstanceOf(NotEnoughMoneyException.class)
                 .hasMessage("Недостаточно средств на счету");
     }
 
     @Test
     void chargeBalance_Deposit_Success() {
-        when(accountRepository.getAccountByLogin(TEST_LOGIN)).thenReturn(Optional.of(testAccount));
+        when(bankAccountRepository.getBankAccountsByAccountNum(TEST_ACC_NUM)).thenReturn(Optional.of(bankAccount));
 
-        accountsService.chargeBalance(TEST_LOGIN, CashAction.PUT, 300L);
+        accountsService.chargeBalance(TEST_ACC_NUM, CashAction.PUT, BigDecimal.valueOf(300));
 
-        assertThat(testAccount.getBalance()).isEqualTo(1300L);
-        verify(accountRepository).save(testAccount);
+        verify(bankAccountRepository).save(bankAccount);
     }
 
     @Test
     void chargeBalance_Withdraw_Success() {
-        when(accountRepository.getAccountByLogin(TEST_LOGIN)).thenReturn(Optional.of(testAccount));
+        when(bankAccountRepository.getBankAccountsByAccountNum(TEST_ACC_NUM)).thenReturn(Optional.of(bankAccount));
 
-        accountsService.chargeBalance(TEST_LOGIN, CashAction.GET, 300L);
+        accountsService.chargeBalance(TEST_ACC_NUM, CashAction.GET, BigDecimal.valueOf(50));
 
-        assertThat(testAccount.getBalance()).isEqualTo(700L);
-        verify(accountRepository).save(testAccount);
+        verify(bankAccountRepository).save(bankAccount);
     }
 
     @Test
     void chargeBalance_InsufficientFunds_Error() {
-        when(accountRepository.getAccountByLogin(TEST_LOGIN)).thenReturn(Optional.of(testAccount));
+        when(bankAccountRepository.getBankAccountsByAccountNum(TEST_ACC_NUM)).thenReturn(Optional.of(bankAccount));
 
-        assertThatThrownBy(() -> accountsService.chargeBalance(TEST_LOGIN, CashAction.GET, 2000L))
+        assertThatThrownBy(() -> accountsService.chargeBalance(TEST_ACC_NUM, CashAction.GET, BigDecimal.valueOf(2000)))
                 .isInstanceOf(NotEnoughMoneyException.class)
                 .hasMessage("Недостаточно средств на счету");
     }

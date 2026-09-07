@@ -13,8 +13,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.accounts.client.NotificationClient;
 import ru.yandex.practicum.accounts.config.TestSecurityConfig;
-import ru.yandex.practicum.accounts.model.entity.Account;
-import ru.yandex.practicum.accounts.model.dto.AccountDto;
+import ru.yandex.practicum.accounts.model.dto.UserProfileDto;
+import ru.yandex.practicum.accounts.model.entity.UserProfile;
+import ru.yandex.practicum.accounts.model.dto.PageInfoDto;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -40,21 +41,6 @@ class AccountControllerIntegrationTest {
     @MockitoBean
     private NotificationClient notificationClient;
 
-    private AccountDto testDto;
-
-    @BeforeEach
-    void setUp() {
-        Account account = Account.builder()
-                .login("luke")
-                .username("Luke Skywalker")
-                .birthDate(LocalDate.of(1990, 1, 15))
-                .balance(5000L)
-                .build();
-
-        testDto = new AccountDto();
-        testDto.setCurAccount(account);
-        testDto.setAccounts(List.of());
-    }
 
     @Test
     void getAccountInfo_Success() throws Exception {
@@ -65,25 +51,24 @@ class AccountControllerIntegrationTest {
                         ))
                 )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.curAccount.login").value("luke"))
-                .andExpect(jsonPath("$.curAccount.username").value("Luke Skywalker"));
+                .andExpect(jsonPath("$.userProfileDto.login").value("luke"))
+                .andExpect(jsonPath("$.userProfileDto.username").value("Luke Skywalker"))
+                .andExpect(jsonPath("$.curAccounts[0].accountNumber").value("qwe"))
+                .andExpect(jsonPath("$.accounts[0].username").value("Han Solo"))
+                .andExpect(jsonPath("$.accounts[0].accounts.length()").value(1));
     }
 
     @Test
     void getAccountInfo_Error() throws Exception {
-        Account acc = testDto.getCurAccount();
-        acc.setUsername(null);
-        acc.setBirthDate(null);
-
 
         mockMvc.perform(get("/accounts/info/unknown")
                         .with(jwt().jwt(jwt -> jwt
                                 .claim("realm_access", Map.of("roles", List.of("USER")))
                         ))
                 )
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.curAccount.login").value("unknown"))
-                .andExpect(jsonPath("$.curAccount.username").isEmpty());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Профиль пользователя unknown отсутствует"))
+                .andExpect(jsonPath("$.resultCode").value("AccountNotExists"));
     }
 
     @Test
@@ -96,13 +81,17 @@ class AccountControllerIntegrationTest {
     void updateAccount_Success() throws Exception {
 
         mockMvc.perform(put("/accounts/info/luke")
-                        .param("username", "Luke Skywalker")
+                        .param("username", "Luke Starkiller")
                         .param("birthdate", "1990-01-15")
                         .with(jwt().jwt(jwt -> jwt
                                 .claim("realm_access", Map.of("roles", List.of("USER", "ACCOUNT_WRITE")))
                         )))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.curAccount.login").value("luke"));
+                .andExpect(jsonPath("$.userProfileDto.login").value("luke"))
+                .andExpect(jsonPath("$.userProfileDto.username").value("Luke Starkiller"))
+                .andExpect(jsonPath("$.curAccounts[0].accountNumber").value("qwe"))
+                .andExpect(jsonPath("$.accounts[0].username").value("Han Solo"))
+                .andExpect(jsonPath("$.accounts[0].accounts.length()").value(1));
     }
 
     @Test
@@ -129,7 +118,7 @@ class AccountControllerIntegrationTest {
     void chargeBalance_Success() throws Exception {
 
 
-        mockMvc.perform(put("/accounts/charge/luke")
+        mockMvc.perform(put("/accounts/charge/qwe")
                         .param("action", "GET")
                         .param("sum", "1000")
                         .with(jwt().jwt(jwt -> jwt
@@ -152,7 +141,7 @@ class AccountControllerIntegrationTest {
 
     @Test
     void chargeBalance_Forbidden() throws Exception {
-        mockMvc.perform(put("/charge/luke")
+        mockMvc.perform(put("/charge/qwe")
                         .param("action", "GET")
                         .param("sum", "1000"))
                 .andExpect(status().isUnauthorized());
@@ -162,22 +151,22 @@ class AccountControllerIntegrationTest {
     void transfer_Success() throws Exception {
 
         mockMvc.perform(put("/accounts/transfer")
-                        .param("from", "luke")
-                        .param("to", "han")
+                        .param("from", "qwe")
+                        .param("to", "asd")
                         .param("sum", "500")
                         .with(jwt().jwt(jwt -> jwt
                                 .claim("realm_access", Map.of("roles", List.of("USER", "ACCOUNT_WRITE")))
                         )))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Перевод выполнен: 500 со счёта luke на счёт han"));
+                .andExpect(jsonPath("$.message").value("Перевод выполнен: 500 со счёта qwe на счёт asd"));
     }
 
     @Test
     void transfer_Error() throws Exception {
 
         mockMvc.perform(put("/accounts/transfer")
-                        .param("from", "from")
-                        .param("to", "to")
+                        .param("from", "qwe")
+                        .param("to", "asd")
                         .param("sum", "-999999")
                         .with(jwt().jwt(jwt -> jwt
                                 .claim("realm_access", Map.of("roles", List.of("USER", "ACCOUNT_WRITE")))
@@ -188,8 +177,8 @@ class AccountControllerIntegrationTest {
     @Test
     void transfer_Forbidden() throws Exception {
         mockMvc.perform(put("/transfer")
-                        .param("from", "from")
-                        .param("to", "to")
+                        .param("from", "qwe")
+                        .param("to", "asd")
                         .param("sum", "500"))
                 .andExpect(status().isUnauthorized());
     }

@@ -17,7 +17,8 @@ Contract.make {
         }
         body '''
         {
-            "message":"chargeBalance.sum: должно быть не меньше 0"
+            "message":"chargeBalance.sum: должно быть больше 0",
+            "resultCode":"ConstraintViolationException"
         }
         '''
     }

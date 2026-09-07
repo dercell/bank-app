@@ -19,6 +19,7 @@
             <column name="amount" type="DECIMAL(19,2)"/>
             <column name="initiator" type="VARCHAR(500)"/>
             <column name="target" type="VARCHAR(500)"/>
+            <column name="status" type="VARCHAR(50)"/>
         </createTable>
         <rollback>
             <dropTable tableName="operation_log"/>

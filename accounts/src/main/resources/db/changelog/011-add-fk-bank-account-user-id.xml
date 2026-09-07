@@ -11,20 +11,20 @@
                 <tableExists tableName="bank_account"/>
                 <tableExists tableName="user_profile"/>
                 <not>
-                    <foreignKeyConstraintExists foreignKeyName="fk_bank_account_owner_login"
+                    <foreignKeyConstraintExists foreignKeyName="fk_bank_account_user_id"
                                                 foreignKeyTableName="bank_account"/>
                 </not>
             </and>
         </preConditions>
         <addForeignKeyConstraint baseTableName="bank_account"
-                                 baseColumnNames="owner_login"
+                                 baseColumnNames="user_id"
                                  referencedTableName="user_profile"
-                                 referencedColumnNames="login"
-                                 constraintName="fk_bank_account_owner_login"
+                                 referencedColumnNames="id"
+                                 constraintName="fk_bank_account_user_id"
                                  onDelete="CASCADE"/>
         <rollback>
             <dropForeignKeyConstraint baseTableName="bank_account"
-                                      constraintName="fk_bank_account_owner_login"/>
+                                      constraintName="fk_bank_account_user_id"/>
         </rollback>
     </changeSet>
 

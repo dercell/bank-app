@@ -11,11 +11,16 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.yandex.practicum.accounts.config.TestSecurityConfig;
 import ru.yandex.practicum.accounts.controller.AccountController;
+import ru.yandex.practicum.accounts.exceptions.AccountNotExists;
 import ru.yandex.practicum.accounts.model.CashAction;
-import ru.yandex.practicum.accounts.model.entity.Account;
 import ru.yandex.practicum.accounts.model.dto.AccountDto;
+import ru.yandex.practicum.accounts.model.dto.UserAccountInfoDto;
+import ru.yandex.practicum.accounts.model.dto.UserProfileDto;
+import ru.yandex.practicum.accounts.model.entity.UserProfile;
+import ru.yandex.practicum.accounts.model.dto.PageInfoDto;
 import ru.yandex.practicum.accounts.service.AccountsService;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -38,20 +43,25 @@ class AccountControllerTest {
     @MockitoBean
     private AccountsService accountService;
 
-    private AccountDto testDto;
+    private PageInfoDto testDto;
 
     @BeforeEach
     void setUp() {
-        Account account = Account.builder()
+        UserProfileDto upd = UserProfileDto.builder()
                 .login("luke")
                 .username("Luke Skywalker")
                 .birthDate(LocalDate.of(1990, 1, 15))
-                .balance(5000L)
                 .build();
 
-        testDto = new AccountDto();
-        testDto.setCurAccount(account);
-        testDto.setAccounts(List.of());
+        UserAccountInfoDto uaid = UserAccountInfoDto.builder()
+                .login("han").username("Han Solo").accounts(
+                        List.of(AccountDto.builder().accountNumber("asd").balance(BigDecimal.valueOf(100)).build())
+                )
+                .build();
+        testDto = new PageInfoDto();
+        testDto.setUserProfileDto(upd);
+        testDto.setCurAccounts(List.of(AccountDto.builder().accountNumber("qwe").balance(BigDecimal.valueOf(200)).build()));
+        testDto.setAccounts(List.of(uaid));
     }
 
     @Test
@@ -64,26 +74,30 @@ class AccountControllerTest {
                         ))
                 )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.curAccount.login").value("luke"))
-                .andExpect(jsonPath("$.curAccount.username").value("Luke Skywalker"));
+                .andExpect(jsonPath("$.userProfileDto.login").value("luke"))
+                .andExpect(jsonPath("$.userProfileDto.username").value("Luke Skywalker"))
+                .andExpect(jsonPath("$.curAccounts[0].accountNumber").value("qwe"))
+                .andExpect(jsonPath("$.accounts[0].username").value("Han Solo"))
+                .andExpect(jsonPath("$.accounts[0].accounts.length()").value(1))
+        ;
     }
 
     @Test
     void getAccountInfo_Error() throws Exception {
-        Account acc = testDto.getCurAccount();
-        acc.setUsername(null);
-        acc.setBirthDate(null);
-        when(accountService.getAccountInfo("unknown"))
-                .thenReturn(testDto);
+
+        String login = "unknown";
+
+        when(accountService.getAccountInfo(login))
+                .thenThrow(new AccountNotExists("Профиль пользователя unknown отсутствует"));
 
         mockMvc.perform(get("/accounts/info/unknown")
                         .with(jwt().jwt(jwt -> jwt
                                 .claim("realm_access", Map.of("roles", List.of("USER")))
                         ))
                 )
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.curAccount.login").value("luke"))
-                .andExpect(jsonPath("$.curAccount.username").isEmpty());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Профиль пользователя unknown отсутствует"))
+                .andExpect(jsonPath("$.resultCode").value("AccountNotExists"));
     }
 
     @Test
@@ -104,7 +118,11 @@ class AccountControllerTest {
                                 .claim("realm_access", Map.of("roles", List.of("USER", "ACCOUNT_WRITE")))
                         )))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.curAccount.login").value("luke"));
+                .andExpect(jsonPath("$.userProfileDto.login").value("luke"))
+                .andExpect(jsonPath("$.userProfileDto.username").value("Luke Skywalker"))
+                .andExpect(jsonPath("$.curAccounts[0].accountNumber").value("qwe"))
+                .andExpect(jsonPath("$.accounts[0].username").value("Han Solo"))
+                .andExpect(jsonPath("$.accounts[0].accounts.length()").value(1));
     }
 
     @Test
@@ -131,7 +149,7 @@ class AccountControllerTest {
 
     @Test
     void chargeBalance_Success() throws Exception {
-        doNothing().when(accountService).chargeBalance("luke", CashAction.GET, 1000);
+        doNothing().when(accountService).chargeBalance("luke", CashAction.GET, new BigDecimal(1000));
 
         mockMvc.perform(put("/accounts/charge/luke")
                         .param("action", "GET")
@@ -145,7 +163,7 @@ class AccountControllerTest {
     @Test
     void chargeBalance_Error() throws Exception {
         doThrow(new IllegalArgumentException("Сумма не может быть отрицательной"))
-                .when(accountService).chargeBalance("luke", CashAction.PUT, -100);
+                .when(accountService).chargeBalance("luke", CashAction.PUT, new BigDecimal(-100));
 
         mockMvc.perform(put("/accounts/charge/luke")
                         .param("action", "PUT")
@@ -166,7 +184,7 @@ class AccountControllerTest {
 
     @Test
     void transfer_Success() throws Exception {
-        doNothing().when(accountService).transfer("from", "to", 500);
+        doNothing().when(accountService).transfer("from", "to", new BigDecimal(500));
 
         mockMvc.perform(put("/accounts/transfer")
                         .param("from", "from")
@@ -182,7 +200,7 @@ class AccountControllerTest {
     @Test
     void transfer_Error() throws Exception {
         doThrow(new IllegalStateException("Недостаточно средств"))
-                .when(accountService).transfer("from", "to", -999999);
+                .when(accountService).transfer("from", "to", new BigDecimal(-999999));
 
         mockMvc.perform(put("/accounts/transfer")
                         .param("from", "from")

@@ -14,7 +14,7 @@
     <include file="008-drop-balance-from-user-profile.xml" relativeToChangelogFile="true"/>
     <include file="009-add-unique-constraint-login.xml" relativeToChangelogFile="true"/>
     <include file="010-create-bank-account-table.xml" relativeToChangelogFile="true"/>
-    <include file="011-add-fk-bank-account-owner-login.xml" relativeToChangelogFile="true"/>
+    <include file="011-add-fk-bank-account-user-id.xml" relativeToChangelogFile="true"/>
     <include file="012-create-operation-log-table.xml" relativeToChangelogFile="true"/>
     <include file="013-add-index-bank-account-owner-login.xml" relativeToChangelogFile="true"/>
 

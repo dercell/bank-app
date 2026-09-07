@@ -31,7 +31,8 @@ public class UserProfile {
     private LocalDate birthDate;
 
     @Builder.Default
-    @OneToMany(mappedBy = "user")
+    @OneToMany
+    @JoinColumn(name = "user_id")
     private List<BankAccount> accountList = new ArrayList<>();
 
 }

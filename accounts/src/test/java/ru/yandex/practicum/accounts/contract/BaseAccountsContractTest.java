@@ -11,12 +11,14 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.yandex.practicum.accounts.client.NotificationClient;
 import ru.yandex.practicum.accounts.config.ContractTestSecurityConfig;
-import ru.yandex.practicum.accounts.model.entity.Account;
 import ru.yandex.practicum.accounts.model.dto.AccountDto;
-import ru.yandex.practicum.accounts.model.dto.AccountStripped;
+import ru.yandex.practicum.accounts.model.dto.UserProfileDto;
+import ru.yandex.practicum.accounts.model.dto.PageInfoDto;
+import ru.yandex.practicum.accounts.model.dto.UserAccountInfoDto;
 import ru.yandex.practicum.accounts.service.AccountsService;
 
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -49,53 +51,28 @@ public abstract class BaseAccountsContractTest {
 
     private void setupMocks() {
         doNothing().when(notificationClient).sendNotification(anyString());
-        doNothing().when(accountsService).transfer("luke", "han", 500);
+        doNothing().when(accountsService).transfer("luke", "han", BigDecimal.valueOf(500));
 
-        AccountDto accountDto = createAccountDto();
-        when(accountsService.getAccountInfo("luke"))
-                .thenReturn(accountDto);
+        PageInfoDto accountDto = getAccountDto("Luke Skywalker", LocalDate.of(1990, 1, 15));
+        when(accountsService.getAccountInfo("luke")).thenReturn(accountDto);
 
-        AccountDto updatedDto = createUpdatedAccountDto();
-        when(accountsService.updateAccount(eq("luke"), anyString(), any(LocalDate.class)))
-                .thenReturn(updatedDto);
+        PageInfoDto updatedDto = getAccountDto("Luke Starkiller", LocalDate.of(1970, 1, 15));
+        when(accountsService.updateAccount(eq("luke"), anyString(), any(LocalDate.class))).thenReturn(updatedDto);
 
     }
 
-    private AccountDto createAccountDto() {
-        Account account = Account.builder()
-                .login("luke")
-                .username("Luke Skywalker")
-                .birthDate(LocalDate.of(1990, 1, 15))
-                .balance(1000L)
+    private PageInfoDto getAccountDto(String username, LocalDate bdate) {
+
+        UserProfileDto upd = UserProfileDto.builder().login("luke").username(username).birthDate(bdate).build();
+
+        UserAccountInfoDto uaid = UserAccountInfoDto.builder().login("han").username("Han Solo")
+                .accounts(List.of(AccountDto.builder().accountNumber("asd").balance(BigDecimal.valueOf(100)).build()))
                 .build();
+        PageInfoDto testDto = new PageInfoDto();
+        testDto.setUserProfileDto(upd);
+        testDto.setCurAccounts(List.of(AccountDto.builder().accountNumber("qwe").balance(BigDecimal.valueOf(200)).build()));
+        testDto.setAccounts(List.of(uaid));
 
-        AccountStripped stripped = new AccountStripped();
-        stripped.setLogin("han");
-        stripped.setUsername("Han Solo");
-
-        AccountDto dto = new AccountDto();
-        dto.setCurAccount(account);
-        dto.setAccounts(List.of(stripped));
-
-        return dto;
-    }
-
-    private AccountDto createUpdatedAccountDto() {
-        Account account = Account.builder()
-                .login("luke")
-                .username("Luke Starkiller")
-                .birthDate(LocalDate.of(1970, 1, 15))
-                .balance(1000L)
-                .build();
-
-        AccountStripped stripped = new AccountStripped();
-        stripped.setLogin("han");
-        stripped.setUsername("Han Solo");
-
-        AccountDto dto = new AccountDto();
-        dto.setCurAccount(account);
-        dto.setAccounts(List.of(stripped));
-
-        return dto;
+        return testDto;
     }
 }
