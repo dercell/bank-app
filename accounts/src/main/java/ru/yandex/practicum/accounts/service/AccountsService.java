@@ -9,12 +9,19 @@ import ru.yandex.practicum.accounts.exceptions.AccountNotExists;
 import ru.yandex.practicum.accounts.exceptions.InvalidCashAction;
 import ru.yandex.practicum.accounts.exceptions.NotEnoughMoneyException;
 import ru.yandex.practicum.accounts.exceptions.SelfTransferException;
-import ru.yandex.practicum.accounts.model.entity.Account;
 import ru.yandex.practicum.accounts.model.dto.AccountDto;
-import ru.yandex.practicum.accounts.model.dto.AccountStripped;
+import ru.yandex.practicum.accounts.model.dto.UserProfileDto;
+import ru.yandex.practicum.accounts.model.entity.BankAccount;
+import ru.yandex.practicum.accounts.model.entity.OperationLog;
+import ru.yandex.practicum.accounts.model.entity.UserProfile;
+import ru.yandex.practicum.accounts.model.dto.PageInfoDto;
+import ru.yandex.practicum.accounts.model.dto.UserAccountInfoDto;
 import ru.yandex.practicum.accounts.model.CashAction;
-import ru.yandex.practicum.accounts.repository.AccountRepository;
+import ru.yandex.practicum.accounts.repository.BankAccountRepository;
+import ru.yandex.practicum.accounts.repository.OperationLogRepository;
+import ru.yandex.practicum.accounts.repository.UserProfileRepository;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,35 +31,46 @@ import java.util.List;
 @AllArgsConstructor
 public class AccountsService {
 
-    private final AccountRepository accountRepository;
+    private final UserProfileRepository userProfileRepository;
+    private final BankAccountRepository bankAccountRepository;
+    private final OperationLogRepository operationLogRepository;
+
     private final NotificationClient notificationClient;
 
-    public Account getAccountByLogin(String login) {
-        return accountRepository.getAccountByLogin(login).orElseThrow(() -> new AccountNotExists("Аккаунта " + login + " не существует"));
+    public UserProfile getAccountByLogin(String login) {
+        return userProfileRepository.getAccountByLogin(login).orElseThrow(() -> new AccountNotExists("Аккаунта " + login + " не существует"));
     }
 
-    public AccountDto getAccountInfo(String login) {
-        AccountDto accInfo = new AccountDto();
-        List<AccountStripped> otherAccs = new ArrayList<>();
-        List<Account> accounts = accountRepository.findAll();
-        for (Account acc : accounts) {
+    public PageInfoDto getAccountInfo(String login) {
+        PageInfoDto pageInfoDto = new PageInfoDto();
+
+        List<UserAccountInfoDto> otherAccs = new ArrayList<>();
+
+        List<UserProfile> accounts = userProfileRepository.findAll();
+
+        for (UserProfile acc : accounts) {
+            List<AccountDto> accountDtos = acc.getAccountList().stream()
+                    .map(a -> new AccountDto(a.getAccountNum(), a.getBalance()))
+                    .toList();
+
             if (acc.getLogin().equals(login)) {
-                accInfo.setCurAccount(acc);
+                UserProfileDto upd = new UserProfileDto(acc.getLogin(), acc.getUsername(), acc.getBirthDate());
+                pageInfoDto.setUserProfileDto(upd);
+
+                pageInfoDto.setCurAccounts(accountDtos);
             } else {
-                otherAccs.add(new AccountStripped(acc.getLogin(), acc.getUsername()));
+                UserAccountInfoDto uaid = new UserAccountInfoDto(acc.getLogin(), acc.getUsername(), accountDtos);
+                otherAccs.add(uaid);
             }
+
         }
-        if (accInfo.getCurAccount() == null) {
-            Account newAcc = Account.builder().login(login).balance(0L).build();
-            Account savedAcc = accountRepository.save(newAcc);
-            accInfo.setCurAccount(savedAcc);
-        }
-        accInfo.setAccounts(otherAccs);
-        return accInfo;
+        pageInfoDto.setAccounts(otherAccs);
+
+        return pageInfoDto;
     }
 
-    public AccountDto updateAccount(String login, String name, LocalDate bdate) {
-        Account currentUser = getAccountByLogin(login);
+    public PageInfoDto updateAccount(String login, String name, LocalDate bdate) {
+        UserProfile currentUser = getAccountByLogin(login);
 
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("Имя не может быть пустым");
@@ -65,51 +83,63 @@ public class AccountsService {
         currentUser.setUsername(name);
         currentUser.setBirthDate(bdate);
 
-        accountRepository.save(currentUser);
+        userProfileRepository.save(currentUser);
         notificationClient.sendNotification("Профиль %s обновлен".formatted(login));
         return getAccountInfo(login);
 
     }
 
     @Transactional
-    public void transfer(String fromLogin, String toLogin, int value) {
-        Account from = getAccountByLogin(fromLogin);
-        Account to = getAccountByLogin(toLogin);
+    public void transfer(String fromAcc, String toAcc, BigDecimal value) {
+        BankAccount from = bankAccountRepository.getBankAccountsByAccountNum(fromAcc)
+                .orElseThrow(() -> new IllegalStateException("Отсутствует счет отправителя " + fromAcc));
+        BankAccount to = bankAccountRepository.getBankAccountsByAccountNum(toAcc)
+                .orElseThrow(() -> new IllegalStateException("Отсутствует счет получателя " + toAcc));
 
-        if (fromLogin.equals(toLogin)) {
-            throw new SelfTransferException("Нельзя переводить самому себе");
+        if (fromAcc.equals(toAcc)) {
+            throw new SelfTransferException("Нельзя переводить на тот же самый счет");
         }
 
-        if (value > from.getBalance()) {
+        if (from.getBalance().compareTo(value) < 0) {
             throw new NotEnoughMoneyException("Недостаточно средств на счету");
         }
 
-        from.setBalance(from.getBalance() - value);
-        to.setBalance(to.getBalance() + value);
+        from.setBalance(from.getBalance().subtract(value));
+        to.setBalance(to.getBalance().add(value));
 
-        accountRepository.saveAll(List.of(from, to));
+        bankAccountRepository.saveAll(List.of(from, to));
+
+        OperationLog ol = OperationLog.builder()
+                .operationType("TRANSFER")
+                .amount(value)
+                .initiator(fromAcc).target(toAcc)
+                .build();
+
+        operationLogRepository.save(ol);
     }
 
-    public void chargeBalance(String login, CashAction action, long sum) {
-        Account curAccount = getAccountByLogin(login);
+    @Transactional
+    public void chargeBalance(String fromAcc, CashAction action, BigDecimal sum) {
+        BankAccount curAccount = bankAccountRepository.getBankAccountsByAccountNum(fromAcc)
+                .orElseThrow(() -> new IllegalStateException("Счет не найден: " + fromAcc));
         String msg;
 
         switch (action) {
             case GET -> {
-                if (sum > curAccount.getBalance()) {
+                if (curAccount.getBalance().compareTo(sum) < 0) {
                     throw new NotEnoughMoneyException("Недостаточно средств на счету");
                 }
-                curAccount.setBalance(curAccount.getBalance() - sum);
-                msg = "Снято %d руб".formatted(sum);
+                curAccount.setBalance(curAccount.getBalance().subtract(sum));
+                msg = "Снято %.2f руб".formatted(sum);
             }
             case PUT -> {
-                curAccount.setBalance(sum + curAccount.getBalance());
-                msg = "Положено %d руб".formatted(curAccount.getBalance());
+                curAccount.setBalance(curAccount.getBalance().add(sum));
+                msg = "Положено %.2f руб".formatted(sum);
             }
             default -> throw new InvalidCashAction("Недопустимая операция");
         }
 
-        accountRepository.save(curAccount);
+        bankAccountRepository.save(curAccount);
         log.info(msg);
     }
 

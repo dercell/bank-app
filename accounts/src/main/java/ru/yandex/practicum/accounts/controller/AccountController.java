@@ -7,10 +7,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.accounts.model.CashAction;
-import ru.yandex.practicum.accounts.model.dto.AccountDto;
+import ru.yandex.practicum.accounts.model.dto.PageInfoDto;
 import ru.yandex.practicum.accounts.model.dto.ServiceResultDto;
 import ru.yandex.practicum.accounts.service.AccountsService;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @RestController
@@ -23,16 +24,16 @@ public class AccountController {
 
     @GetMapping("/info/{login}")
     @PreAuthorize("hasRole('USER')")
-    public AccountDto getAccountByLogin(@PathVariable("login") String login) {
+    public PageInfoDto getAccountByLogin(@PathVariable("login") String login) {
 
         return accountService.getAccountInfo(login);
     }
 
     @PutMapping("/info/{login}")
     @PreAuthorize("hasRole('USER') && hasAuthority('account.write')")
-    public AccountDto updateAccount(@PathVariable("login") String login,
-                                    @RequestParam("username") String name,
-                                    @RequestParam("birthdate") LocalDate birthdate) {
+    public PageInfoDto updateAccount(@PathVariable("login") String login,
+                                     @RequestParam("username") String name,
+                                     @RequestParam("birthdate") LocalDate birthdate) {
         return accountService.updateAccount(login, name, birthdate);
     }
 
@@ -40,7 +41,7 @@ public class AccountController {
     @PreAuthorize("hasRole('SERVICE') && hasAuthority('account.write')")
     public ResponseEntity<Void> chargeBalance(@PathVariable("login") String login,
                                               @RequestParam("action") CashAction action,
-                                              @RequestParam("sum") @Positive Integer sum) {
+                                              @RequestParam("sum") @Positive BigDecimal sum) {
 
         accountService.chargeBalance(login, action, sum);
         return ResponseEntity.noContent().build();
@@ -50,7 +51,7 @@ public class AccountController {
     @PreAuthorize("hasRole('SERVICE') && hasAuthority('account.write')")
     public ServiceResultDto transfer(@RequestParam("from") String fromLogin,
                                      @RequestParam("to") String toLogin,
-                                     @RequestParam("sum") @Positive int sum) {
+                                     @RequestParam("sum") @Positive BigDecimal sum) {
         accountService.transfer(fromLogin, toLogin, sum);
         return new ServiceResultDto("Перевод выполнен: "
                 + sum

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="12" author="sergey.kolotev">
+        <preConditions onFail="WARN">
+            <not>
+                <tableExists tableName="operation_log"/>
+            </not>
+        </preConditions>
+        <createTable tableName="operation_log">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="operation_type" type="VARCHAR(50)"/>
+            <column name="amount" type="DECIMAL(19,2)"/>
+            <column name="initiator" type="VARCHAR(500)"/>
+            <column name="target" type="VARCHAR(500)"/>
+        </createTable>
+        <rollback>
+            <dropTable tableName="operation_log"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

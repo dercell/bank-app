@@ -10,5 +10,12 @@
     <include file="004-accounts-remove-first-name-col.xml" relativeToChangelogFile="true"/>
     <include file="005-accounts-remove-last-name-col.xml" relativeToChangelogFile="true"/>
     <include file="006-accounts-add-username-col.xml" relativeToChangelogFile="true"/>
+    <include file="007-rename-accounts-to-user-profile.xml" relativeToChangelogFile="true"/>
+    <include file="008-drop-balance-from-user-profile.xml" relativeToChangelogFile="true"/>
+    <include file="009-add-unique-constraint-login.xml" relativeToChangelogFile="true"/>
+    <include file="010-create-bank-account-table.xml" relativeToChangelogFile="true"/>
+    <include file="011-add-fk-bank-account-owner-login.xml" relativeToChangelogFile="true"/>
+    <include file="012-create-operation-log-table.xml" relativeToChangelogFile="true"/>
+    <include file="013-add-index-bank-account-owner-login.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

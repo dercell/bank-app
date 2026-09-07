@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Builder
 @Getter
@@ -12,8 +14,8 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "accounts")
-public class Account {
+@Table(name = "user_profile")
+public class UserProfile {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,7 +30,8 @@ public class Account {
     @Column(name = "birthdate")
     private LocalDate birthDate;
 
-    @Column(name = "balance")
-    private Long balance;
+    @Builder.Default
+    @OneToMany(mappedBy = "user")
+    private List<BankAccount> accountList = new ArrayList<>();
 
 }
