@@ -12,6 +12,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import ru.yandex.practicum.cash.client.NotificationClient;
 import ru.yandex.practicum.cash.config.ContractTestSecurityConfig;
 import ru.yandex.practicum.cash.dto.CashAction;
+import ru.yandex.practicum.cash.dto.CashOpDto;
 import ru.yandex.practicum.cash.service.CashService;
 
 import static org.mockito.ArgumentMatchers.*;
@@ -37,7 +38,7 @@ public abstract class BaseCashContractTest {
     public void setup() {
         RestAssuredMockMvc.mockMvc(mockMvc);
         doNothing().when(notificationClient).sendNotification(anyString());
-        doNothing().when(cashService).chargeSum(anyString(), any(CashAction.class), anyInt());
+        doNothing().when(cashService).chargeSum(any(CashOpDto.class));
     }
 
 }

@@ -172,22 +172,27 @@ class AccountControllerTest {
         doThrow(new IllegalArgumentException("Сумма не может быть отрицательной"))
                 .when(accountService).chargeBalance(body);
 
-        mockMvc.perform(put("/accounts/charge/luke")
-                        .param("action", "PUT")
-                        .param("sum", "-100")
+        mockMvc.perform(put("/accounts/charge")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(body))
                         .with(jwt().jwt(jwt -> jwt
                                 .claim("realm_access", Map.of("roles", List.of("USER", "ACCOUNT_WRITE")))
                         )))
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("sum: Сумма должна быть больше 0"));;
     }
 
     @Test
     void chargeBalance_Forbidden() throws Exception {
-        mockMvc.perform(put("/charge/luke")
-                        .param("action", "GET")
-                        .param("sum", "1000"))
+        CashOpDto body = CashOpDto.builder().action(CashAction.PUT).accNumber("qwe").sum(BigDecimal.valueOf(100))
+                .build();
+
+        mockMvc.perform(put("/accounts/charge")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(om.writeValueAsString(body)))
                 .andExpect(status().isUnauthorized());
     }
+
 
     @Test
     void transfer_Success() throws Exception {
@@ -212,13 +217,13 @@ class AccountControllerTest {
                 .when(accountService).transfer(body);
 
         mockMvc.perform(put("/accounts/transfer")
-                        .param("from", "from")
-                        .param("to", "to")
-                        .param("sum", "-999999")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(body))
                         .with(jwt().jwt(jwt -> jwt
                                 .claim("realm_access", Map.of("roles", List.of("USER", "ACCOUNT_WRITE")))
                         )))
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("sum: Сумма должна быть больше 0"));;
     }
 
     @Test

@@ -2,8 +2,10 @@ package ru.yandex.practicum.cash.dto;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.*;
+import org.springframework.validation.annotation.Validated;
 
 
 import java.math.BigDecimal;

@@ -5,14 +5,18 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.yandex.practicum.cash.config.TestSecurityConfig;
 import ru.yandex.practicum.cash.controller.CashController;
 import ru.yandex.practicum.cash.dto.CashAction;
+import ru.yandex.practicum.cash.dto.CashOpDto;
 import ru.yandex.practicum.cash.service.CashService;
+import tools.jackson.databind.ObjectMapper;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -34,34 +38,38 @@ class CashControllerTest {
     @MockitoBean
     private CashService cashService;
 
-    private static final String LOGIN = "luke";
-    private static final CashAction ACTION = CashAction.GET;
-    private static final int SUM = 1000;
+    private static final ObjectMapper om = new ObjectMapper();
+    private static final CashOpDto TEST_BODY = CashOpDto.builder()
+            .action(CashAction.GET).accNumber("lukeAcc").sum(BigDecimal.valueOf(1000))
+            .build();
+
 
     @Test
     void chargeSum_Success() throws Exception {
-        doNothing().when(cashService).chargeSum(LOGIN, ACTION, SUM);
 
-        mockMvc.perform(put("/cash/{login}", LOGIN)
-                        .param("action", ACTION.toString())
-                        .param("sum", String.valueOf(SUM))
+        doNothing().when(cashService).chargeSum(TEST_BODY);
+
+        mockMvc.perform(put("/cash")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(TEST_BODY))
                         .with(jwt().jwt(jwt -> jwt
                                 .claim("realm_access", List.of("USER", "CASH_WRITE"))
                         )))
                 .andExpect(status().isNoContent());
 
-        verify(cashService, times(1)).chargeSum(LOGIN, ACTION, SUM);
+        verify(cashService).chargeSum(any(CashOpDto.class));
     }
 
 
     @Test
     void chargeSum_Error() throws Exception {
+        CashOpDto b1 = CashOpDto.builder().action(CashAction.GET).accNumber("lukeAcc").sum(BigDecimal.valueOf(-100)).build();
         doThrow(new IllegalArgumentException("Сумма не может быть отрицательной"))
-                .when(cashService).chargeSum(LOGIN, ACTION, -100);
+                .when(cashService).chargeSum(b1);
 
-        mockMvc.perform(put("/cash/{login}", LOGIN)
-                        .param("action", ACTION.toString())
-                        .param("sum", "-100")
+        mockMvc.perform(put("/cash")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(b1))
                         .with(jwt().jwt(jwt -> jwt
                                 .claim("realm_access", Map.of("roles", List.of("USER", "CASH_WRITE")))
                         )))
@@ -71,11 +79,11 @@ class CashControllerTest {
 
     @Test
     void chargeSum_Forbidden() throws Exception {
-        mockMvc.perform(put("/cash/{login}", LOGIN)
-                        .param("action", ACTION.toString())
-                        .param("sum", String.valueOf(SUM)))
+        mockMvc.perform(put("/cash")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(TEST_BODY)))
                 .andExpect(status().isUnauthorized());
 
-        verify(cashService, never()).chargeSum(anyString(), any(CashAction.class), anyInt());
+        verify(cashService, never()).chargeSum(any(CashOpDto.class));
     }
 }

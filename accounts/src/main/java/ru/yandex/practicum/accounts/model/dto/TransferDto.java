@@ -21,7 +21,7 @@ public class TransferDto {
     @JsonProperty
     private String toAcc;
 
-    @Positive
+    @Positive(message = "Сумма должна быть больше 0")
     @JsonProperty
     private BigDecimal sum;
 

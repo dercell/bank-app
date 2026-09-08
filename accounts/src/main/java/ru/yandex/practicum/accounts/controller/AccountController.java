@@ -1,5 +1,6 @@
 package ru.yandex.practicum.accounts.controller;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -44,7 +45,7 @@ public class AccountController {
 
     @PutMapping("/charge")
     @PreAuthorize("hasRole('SERVICE') && hasAuthority('account.write')")
-    public ResponseEntity<Void> chargeBalance(@RequestBody CashOpDto body) {
+    public ResponseEntity<Void> chargeBalance(@Valid @RequestBody CashOpDto body) {
 
         accountService.chargeBalance(body);
         return ResponseEntity.noContent().build();
@@ -52,7 +53,7 @@ public class AccountController {
 
     @PutMapping("/transfer")
     @PreAuthorize("hasRole('SERVICE') && hasAuthority('account.write')")
-    public ServiceResultDto transfer(@RequestBody TransferDto body) {
+    public ServiceResultDto transfer(@Valid @RequestBody TransferDto body) {
         accountService.transfer(body);
         return new ServiceResultDto("Перевод выполнен: "
                 + body.getSum()
