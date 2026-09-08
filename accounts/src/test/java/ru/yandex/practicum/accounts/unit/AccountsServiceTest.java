@@ -10,6 +10,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import ru.yandex.practicum.accounts.client.NotificationClient;
 import ru.yandex.practicum.accounts.exceptions.NotEnoughMoneyException;
 import ru.yandex.practicum.accounts.model.CashAction;
+import ru.yandex.practicum.accounts.model.dto.CashOpDto;
+import ru.yandex.practicum.accounts.model.dto.TransferDto;
 import ru.yandex.practicum.accounts.model.entity.BankAccount;
 import ru.yandex.practicum.accounts.model.entity.UserProfile;
 import ru.yandex.practicum.accounts.repository.BankAccountRepository;
@@ -97,8 +99,8 @@ class AccountsServiceTest {
 
         assertThat(result).isNotNull();
         assertEquals(TEST_LOGIN, result.getUserProfileDto().getLogin());
-        assertEquals("han",result.getAccounts().getFirst().getLogin());
-        assertThat(result.getAccounts()).hasSize(1);
+        assertEquals("luke",result.getAccounts().getFirst().getLogin());
+        assertThat(result.getAccounts()).hasSize(2);
         verify(userProfileRepository).findAll();
     }
 
@@ -152,7 +154,8 @@ class AccountsServiceTest {
         when(bankAccountRepository.getBankAccountsByAccountNum(fromAcc)).thenReturn(Optional.of(fromAccount));
         when(bankAccountRepository.getBankAccountsByAccountNum(toAcc)).thenReturn(Optional.of(toAccount));
 
-        accountsService.transfer(fromAcc, toAcc, BigDecimal.valueOf(500));
+        TransferDto body = TransferDto.builder().fromAcc(fromAcc).toAcc(toAcc).sum(BigDecimal.valueOf(500)).build();
+        accountsService.transfer(body);
 
         assertEquals(0, fromAccount.getBalance().compareTo(BigDecimal.valueOf(500)));
         assertEquals(0, toAccount.getBalance().compareTo(BigDecimal.valueOf(700)));
@@ -173,7 +176,9 @@ class AccountsServiceTest {
         when(bankAccountRepository.getBankAccountsByAccountNum(fromAcc)).thenReturn(Optional.of(fromAccount));
         when(bankAccountRepository.getBankAccountsByAccountNum(toAcc)).thenReturn(Optional.of(toAccount));
 
-        assertThatThrownBy(() -> accountsService.transfer(fromAcc, toAcc, BigDecimal.valueOf(500)))
+        TransferDto body = TransferDto.builder().fromAcc(fromAcc).toAcc(toAcc).sum(BigDecimal.valueOf(500)).build();
+
+        assertThatThrownBy(() -> accountsService.transfer(body))
                 .isInstanceOf(NotEnoughMoneyException.class)
                 .hasMessage("Недостаточно средств на счету");
     }
@@ -181,8 +186,9 @@ class AccountsServiceTest {
     @Test
     void chargeBalance_Deposit_Success() {
         when(bankAccountRepository.getBankAccountsByAccountNum(TEST_ACC_NUM)).thenReturn(Optional.of(bankAccount));
+        CashOpDto body = CashOpDto.builder().action(CashAction.PUT).accNumber(TEST_ACC_NUM).sum(BigDecimal.valueOf(300)).build();
 
-        accountsService.chargeBalance(TEST_ACC_NUM, CashAction.PUT, BigDecimal.valueOf(300));
+        accountsService.chargeBalance(body);
 
         verify(bankAccountRepository).save(bankAccount);
     }
@@ -191,7 +197,9 @@ class AccountsServiceTest {
     void chargeBalance_Withdraw_Success() {
         when(bankAccountRepository.getBankAccountsByAccountNum(TEST_ACC_NUM)).thenReturn(Optional.of(bankAccount));
 
-        accountsService.chargeBalance(TEST_ACC_NUM, CashAction.GET, BigDecimal.valueOf(50));
+        CashOpDto body = CashOpDto.builder().action(CashAction.GET).accNumber(TEST_ACC_NUM).sum(BigDecimal.valueOf(50)).build();
+
+        accountsService.chargeBalance(body);
 
         verify(bankAccountRepository).save(bankAccount);
     }
@@ -200,7 +208,9 @@ class AccountsServiceTest {
     void chargeBalance_InsufficientFunds_Error() {
         when(bankAccountRepository.getBankAccountsByAccountNum(TEST_ACC_NUM)).thenReturn(Optional.of(bankAccount));
 
-        assertThatThrownBy(() -> accountsService.chargeBalance(TEST_ACC_NUM, CashAction.GET, BigDecimal.valueOf(2000)))
+        CashOpDto body = CashOpDto.builder().action(CashAction.GET).accNumber(TEST_ACC_NUM).sum(BigDecimal.valueOf(2000)).build();
+
+        assertThatThrownBy(() -> accountsService.chargeBalance(body))
                 .isInstanceOf(NotEnoughMoneyException.class)
                 .hasMessage("Недостаточно средств на счету");
     }

@@ -1,23 +1,24 @@
 package ru.yandex.practicum.accounts.integration;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.accounts.client.NotificationClient;
 import ru.yandex.practicum.accounts.config.TestSecurityConfig;
-import ru.yandex.practicum.accounts.model.dto.UserProfileDto;
-import ru.yandex.practicum.accounts.model.entity.UserProfile;
-import ru.yandex.practicum.accounts.model.dto.PageInfoDto;
+import ru.yandex.practicum.accounts.model.CashAction;
+import ru.yandex.practicum.accounts.model.dto.CashOpDto;
+import ru.yandex.practicum.accounts.model.dto.TransferDto;
+import tools.jackson.databind.ObjectMapper;
 
-import java.time.LocalDate;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -40,6 +41,8 @@ class AccountControllerIntegrationTest {
 
     @MockitoBean
     private NotificationClient notificationClient;
+
+    private final ObjectMapper om = new ObjectMapper();
 
 
     @Test
@@ -116,11 +119,12 @@ class AccountControllerIntegrationTest {
 
     @Test
     void chargeBalance_Success() throws Exception {
+        CashOpDto body = CashOpDto.builder().action(CashAction.GET).accNumber("qwe").sum(BigDecimal.valueOf(1000))
+                .build();
 
-
-        mockMvc.perform(put("/accounts/charge/qwe")
-                        .param("action", "GET")
-                        .param("sum", "1000")
+        mockMvc.perform(put("/accounts/charge")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(body))
                         .with(jwt().jwt(jwt -> jwt
                                 .claim("realm_access", Map.of("roles", List.of("USER", "ACCOUNT_WRITE")))
                         )))
@@ -149,11 +153,12 @@ class AccountControllerIntegrationTest {
 
     @Test
     void transfer_Success() throws Exception {
+        TransferDto body = TransferDto.builder().fromAcc("qwe").toAcc("asd").sum(BigDecimal.valueOf(500)).build();
+
 
         mockMvc.perform(put("/accounts/transfer")
-                        .param("from", "qwe")
-                        .param("to", "asd")
-                        .param("sum", "500")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(body))
                         .with(jwt().jwt(jwt -> jwt
                                 .claim("realm_access", Map.of("roles", List.of("USER", "ACCOUNT_WRITE")))
                         )))

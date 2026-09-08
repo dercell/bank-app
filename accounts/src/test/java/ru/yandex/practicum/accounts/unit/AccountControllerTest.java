@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -13,12 +14,10 @@ import ru.yandex.practicum.accounts.config.TestSecurityConfig;
 import ru.yandex.practicum.accounts.controller.AccountController;
 import ru.yandex.practicum.accounts.exceptions.AccountNotExists;
 import ru.yandex.practicum.accounts.model.CashAction;
-import ru.yandex.practicum.accounts.model.dto.AccountDto;
-import ru.yandex.practicum.accounts.model.dto.UserAccountInfoDto;
-import ru.yandex.practicum.accounts.model.dto.UserProfileDto;
+import ru.yandex.practicum.accounts.model.dto.*;
 import ru.yandex.practicum.accounts.model.entity.UserProfile;
-import ru.yandex.practicum.accounts.model.dto.PageInfoDto;
 import ru.yandex.practicum.accounts.service.AccountsService;
+import tools.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -42,6 +41,8 @@ class AccountControllerTest {
 
     @MockitoBean
     private AccountsService accountService;
+
+    private final ObjectMapper om = new ObjectMapper();
 
     private PageInfoDto testDto;
 
@@ -149,11 +150,13 @@ class AccountControllerTest {
 
     @Test
     void chargeBalance_Success() throws Exception {
-        doNothing().when(accountService).chargeBalance("luke", CashAction.GET, new BigDecimal(1000));
+        CashOpDto body = CashOpDto.builder().action(CashAction.GET).accNumber("qwe").sum(BigDecimal.valueOf(1000))
+                .build();
+        doNothing().when(accountService).chargeBalance(body);
 
-        mockMvc.perform(put("/accounts/charge/luke")
-                        .param("action", "GET")
-                        .param("sum", "1000")
+        mockMvc.perform(put("/accounts/charge")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(body))
                         .with(jwt().jwt(jwt -> jwt
                                 .claim("realm_access", Map.of("roles", List.of("USER", "ACCOUNT_WRITE")))
                         )))
@@ -162,8 +165,12 @@ class AccountControllerTest {
 
     @Test
     void chargeBalance_Error() throws Exception {
+
+        CashOpDto body = CashOpDto.builder().action(CashAction.PUT).accNumber("qwe").sum(BigDecimal.valueOf(-100))
+                .build();
+
         doThrow(new IllegalArgumentException("Сумма не может быть отрицательной"))
-                .when(accountService).chargeBalance("luke", CashAction.PUT, new BigDecimal(-100));
+                .when(accountService).chargeBalance(body);
 
         mockMvc.perform(put("/accounts/charge/luke")
                         .param("action", "PUT")
@@ -184,12 +191,13 @@ class AccountControllerTest {
 
     @Test
     void transfer_Success() throws Exception {
-        doNothing().when(accountService).transfer("from", "to", new BigDecimal(500));
+
+        TransferDto body = TransferDto.builder().fromAcc("from").toAcc("to").sum(BigDecimal.valueOf(500)).build();
+        doNothing().when(accountService).transfer(body);
 
         mockMvc.perform(put("/accounts/transfer")
-                        .param("from", "from")
-                        .param("to", "to")
-                        .param("sum", "500")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(body))
                         .with(jwt().jwt(jwt -> jwt
                                 .claim("realm_access", Map.of("roles", List.of("USER", "ACCOUNT_WRITE")))
                         )))
@@ -199,8 +207,9 @@ class AccountControllerTest {
 
     @Test
     void transfer_Error() throws Exception {
+        TransferDto body = TransferDto.builder().fromAcc("from").toAcc("to").sum(BigDecimal.valueOf(-999999)).build();
         doThrow(new IllegalStateException("Недостаточно средств"))
-                .when(accountService).transfer("from", "to", new BigDecimal(-999999));
+                .when(accountService).transfer(body);
 
         mockMvc.perform(put("/accounts/transfer")
                         .param("from", "from")

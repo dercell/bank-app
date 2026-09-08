@@ -11,10 +11,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.yandex.practicum.accounts.client.NotificationClient;
 import ru.yandex.practicum.accounts.config.ContractTestSecurityConfig;
-import ru.yandex.practicum.accounts.model.dto.AccountDto;
-import ru.yandex.practicum.accounts.model.dto.UserProfileDto;
-import ru.yandex.practicum.accounts.model.dto.PageInfoDto;
-import ru.yandex.practicum.accounts.model.dto.UserAccountInfoDto;
+import ru.yandex.practicum.accounts.model.dto.*;
 import ru.yandex.practicum.accounts.service.AccountsService;
 
 
@@ -51,7 +48,8 @@ public abstract class BaseAccountsContractTest {
 
     private void setupMocks() {
         doNothing().when(notificationClient).sendNotification(anyString());
-        doNothing().when(accountsService).transfer("luke", "han", BigDecimal.valueOf(500));
+        TransferDto body = TransferDto.builder().fromAcc("lukeAcc").toAcc("hanAcc").sum(BigDecimal.valueOf(500)).build();
+        doNothing().when(accountsService).transfer(body);
 
         PageInfoDto accountDto = getAccountDto("Luke Skywalker", LocalDate.of(1990, 1, 15));
         when(accountsService.getAccountInfo("luke")).thenReturn(accountDto);
