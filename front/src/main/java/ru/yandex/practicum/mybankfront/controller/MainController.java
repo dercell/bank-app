@@ -82,7 +82,7 @@ public class MainController {
             Model model,
             @RequestParam("value") BigDecimal value,
             @RequestParam("action") CashAction action,
-            @RequestParam("accountNumber") String accountNumber,
+            @RequestParam("fromAccountNumber") String accountNumber,
             @AuthenticationPrincipal OidcUser oidcUser
     ) {
         String login = oidcUser.getName();
@@ -98,13 +98,13 @@ public class MainController {
     @PostMapping("/transfer")
     public String transfer(
             Model model,
-            @RequestParam("value") int value,
-            @RequestParam("login") String toLogin,
+            @RequestParam("value") BigDecimal value,
+            @RequestParam("fromAccountNumber") String fromAcc,
+            @RequestParam("toAccountNumber") String toAcc,
             @AuthenticationPrincipal OidcUser oidcUser
     ) {
-
         String fromLogin = oidcUser.getName();
-        ServiceResultDto info = transferService.makeTransfer(fromLogin, toLogin, value);
+        ServiceResultDto info = transferService.makeTransfer(fromAcc, toAcc, value);
         PageInfoDto acc = accountService.getAccByLogin(fromLogin);
         fillModel(model, acc, info.getMessage(), null);
 

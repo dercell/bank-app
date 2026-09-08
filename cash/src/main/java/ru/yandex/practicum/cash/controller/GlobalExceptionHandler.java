@@ -32,7 +32,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ServiceResultDto> handler500(Exception ex) {
         log.error("Internal server error: {}", ex.getMessage(), ex);
-        return ResponseEntity.internalServerError().body(new ServiceResultDto(ex.getMessage()));
+        return ResponseEntity.internalServerError().body(new ServiceResultDto(ex.getClass().getSimpleName(), ex.getMessage()));
     }
 
 }

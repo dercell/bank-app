@@ -88,9 +88,14 @@ public class AccountsService {
     }
 
     @Transactional
-    public void transfer(String fromAcc, String toAcc, BigDecimal value) {
+    public void transfer(TransferDto body) {
+
+        String fromAcc = body.getFromAcc();
+        String toAcc = body.getToAcc();
+        BigDecimal value = body.getSum();
+
         BankAccount from = bankAccountRepository.getBankAccountsByAccountNum(fromAcc)
-                .orElseThrow(() -> new IllegalStateException("Отсутствует счет отправителя " + fromAcc));
+                .orElseThrow(() -> new IllegalStateException("Отсутствует счет отправителя " + toAcc));
         BankAccount to = bankAccountRepository.getBankAccountsByAccountNum(toAcc)
                 .orElseThrow(() -> new IllegalStateException("Отсутствует счет получателя " + toAcc));
 

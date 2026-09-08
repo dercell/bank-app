@@ -6,10 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.accounts.model.dto.CashOpDto;
-import ru.yandex.practicum.accounts.model.dto.PageInfoDto;
-import ru.yandex.practicum.accounts.model.dto.ProfileCreateDto;
-import ru.yandex.practicum.accounts.model.dto.ServiceResultDto;
+import ru.yandex.practicum.accounts.model.dto.*;
 import ru.yandex.practicum.accounts.service.AccountsService;
 
 import java.math.BigDecimal;
@@ -55,14 +52,12 @@ public class AccountController {
 
     @PutMapping("/transfer")
     @PreAuthorize("hasRole('SERVICE') && hasAuthority('account.write')")
-    public ServiceResultDto transfer(@RequestParam("from") String fromLogin,
-                                     @RequestParam("to") String toLogin,
-                                     @RequestParam("sum") @Positive BigDecimal sum) {
-        accountService.transfer(fromLogin, toLogin, sum);
+    public ServiceResultDto transfer(@RequestBody TransferDto body) {
+        accountService.transfer(body);
         return new ServiceResultDto("Перевод выполнен: "
-                + sum
-                + " со счёта " + fromLogin
-                + " на счёт " + toLogin);
+                + body.getSum()
+                + " со счёта " + body.getFromAcc()
+                + " на счёт " + body.getToAcc());
     }
 
 

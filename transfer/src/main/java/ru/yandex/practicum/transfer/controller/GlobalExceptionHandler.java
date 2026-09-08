@@ -5,6 +5,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import ru.yandex.practicum.transfer.dto.ServiceResultDto;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 
 @Slf4j
@@ -12,18 +15,25 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(WebClientResponseException.class)
-    public ResponseEntity<String> handleWebClientResponseException(
+    public ResponseEntity<ServiceResultDto> handleWebClientResponseException(
             WebClientResponseException exception
     ) {
-        String body = exception.getResponseBodyAsString();
+        ObjectMapper objectMapper = new ObjectMapper();
+        ServiceResultDto res;
+        try {
+            res = objectMapper.readValue(exception.getResponseBodyAsString(), ServiceResultDto.class);
+        } catch (JacksonException ex) {
+            res = new ServiceResultDto(exception.getClass().getSimpleName(), exception.getResponseBodyAsString());
+        }
 
-        return ResponseEntity.badRequest().body(body);
+        return ResponseEntity.badRequest().body(res);
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> handler500(Exception ex) {
+    public ResponseEntity<ServiceResultDto> handler500(Exception ex) {
         log.error("Internal server error: {}", ex.getMessage(), ex);
-        return ResponseEntity.internalServerError().body(ex.getMessage());
+        return ResponseEntity.internalServerError().body(new ServiceResultDto(ex.getClass().getSimpleName(), ex.getMessage()));
     }
+
 
 }

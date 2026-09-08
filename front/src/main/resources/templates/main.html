@@ -80,7 +80,7 @@
                 </div>
                 <div class="card-body gap-3">
                     <form method="post" th:action="@{/cash}">
-                        <input type="hidden" id="selectedAccount" name="accountNumber"
+                        <input type="hidden" id="selectedCashAccount" name="fromAccountNumber"
                                th:value="${selectedAccount}">
                         <div class="form-group">
                             <h6>
@@ -106,12 +106,14 @@
                 </div>
                 <div class="card-body gap-3">
                     <form method="post" th:action="@{/transfer}">
+                        <input type="hidden" id="selectedTransferAccount" name="fromAccountNumber"
+                               th:value="${selectedAccount}">
                         <div class="form-group">
                             <h6>
                                 <label for="to_account">На счет</label>
                             </h6>
                             <p>
-                                <select class="form-select" id="to_account" name="accountNumber" required>
+                                <select class="form-select" id="to_account" name="toAccountNumber" required>
                                     <optgroup th:each="r : ${recipients}" th:label="${r.username}">
                                         <option th:each="acc : ${r.accounts}"
                                                 th:value="${acc.accountNumber}"
@@ -140,26 +142,36 @@
 
 <script>
     function syncSelectedAccount(accountNumber) {
-        document.getElementById('selectedAccount').value = accountNumber;
+        document.getElementById('selectedCashAccount').value = accountNumber;
+        document.getElementById('selectedTransferAccount').value = accountNumber;
         document.getElementById('displayAccount').textContent = accountNumber;
     }
 
     document.addEventListener('DOMContentLoaded', function() {
         const select = document.getElementById('from_account');
-        const hidden = document.getElementById('selectedAccount');
-        const display = document.getElementById('displayAccount');
+        const hiddenCash = document.getElementById('selectedCashAccount');
+        const hiddenTransfer = document.getElementById('selectedTransferAccount');
 
-        if (hidden && hidden.value) {
+        if (hiddenCash && hiddenCash.value) {
             for (let option of select.options) {
-                if (option.value === hidden.value) {
+                if (option.value === hiddenCash.value) {
                     option.selected = true;
                     break;
                 }
             }
-            display.textContent = hidden.value;
         } else if (select && select.value) {
-            hidden.value = select.value;
-            display.textContent = select.value;
+            hiddenCash.value = select.value;
+        }
+
+        if (hiddenTransfer && hiddenTransfer.value) {
+            for (let option of select.options) {
+                if (option.value === hiddenTransfer.value) {
+                    option.selected = true;
+                    break;
+                }
+            }
+        } else if (select && select.value) {
+            hiddenTransfer.value = select.value;
         }
     });
 </script>

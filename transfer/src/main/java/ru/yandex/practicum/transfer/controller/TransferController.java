@@ -4,11 +4,9 @@ import jakarta.validation.constraints.Positive;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.transfer.dto.ServiceResultDto;
+import ru.yandex.practicum.transfer.dto.TransferDto;
 import ru.yandex.practicum.transfer.service.TransferService;
 
 @Slf4j
@@ -26,11 +24,9 @@ public class TransferController {
     @PutMapping("/submit")
     @PreAuthorize("hasRole('USER') && hasAuthority('transfer.write')")
     public ServiceResultDto transfer(
-            @RequestParam("from") String fromLogin,
-            @RequestParam("to") String toLogin,
-            @RequestParam("sum") @Positive int sum
+           @RequestBody TransferDto body
     ) {
-        return transferSerivce.makeTransfer(fromLogin, toLogin, sum);
+        return transferSerivce.makeTransfer(body);
     }
 
 }
