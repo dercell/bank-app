@@ -12,7 +12,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import ru.yandex.practicum.transfer.client.NotificationClient;
 import ru.yandex.practicum.transfer.config.ContractTestSecurityConfig;
 import ru.yandex.practicum.transfer.dto.ServiceResultDto;
+import ru.yandex.practicum.transfer.dto.TransferDto;
 import ru.yandex.practicum.transfer.service.TransferService;
+
+import java.math.BigDecimal;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
@@ -36,10 +39,10 @@ public abstract class BaseTransferContractTest {
 
     @BeforeEach
     public void setup() {
-
+        TransferDto body = TransferDto.builder().fromAcc("lukeAcc").toAcc("hanAcc").sum(BigDecimal.valueOf(500)).build();
         RestAssuredMockMvc.mockMvc(mockMvc);
         doNothing().when(notificationClient).sendNotification(anyString());
-        when(transferService.makeTransfer("luke", "han", 500)).thenReturn(new ServiceResultDto("Перевод выполнен: 500 со счёта luke на счёт han"));
+        when(transferService.makeTransfer(body)).thenReturn(new ServiceResultDto("Перевод выполнен: 500 со счёта lukeAcc на счёт hanAcc"));
     }
 
 }

@@ -8,7 +8,7 @@ Contract.make {
 
     request {
         method 'PUT'
-        url '/accounts/transfer?from=luke&to=han&sum=500'
+        url '/accounts/transfer'
         headers {
             header 'Content-Type': 'application/json'
         }

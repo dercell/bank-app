@@ -1,6 +1,6 @@
 package ru.yandex.practicum.transfer.controller;
 
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -15,18 +15,18 @@ import ru.yandex.practicum.transfer.service.TransferService;
 @RequestMapping(("/transfer"))
 public class TransferController {
 
-    private final TransferService transferSerivce;
+    private final TransferService transferService;
 
-    public TransferController(TransferService transferSerivce) {
-        this.transferSerivce = transferSerivce;
+    public TransferController(TransferService transferService) {
+        this.transferService = transferService;
     }
 
     @PutMapping("/submit")
     @PreAuthorize("hasRole('USER') && hasAuthority('transfer.write')")
     public ServiceResultDto transfer(
-           @RequestBody TransferDto body
+            @Valid @RequestBody TransferDto body
     ) {
-        return transferSerivce.makeTransfer(body);
+        return transferService.makeTransfer(body);
     }
 
 }
