@@ -72,7 +72,7 @@ class CashControllerIntegrationTest {
                         .with(jwt().jwt(jwt -> jwt
                                 .claim("realm_access", Map.of("roles", List.of("USER", "CASH_WRITE")))
                         )))
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isBadRequest());
     }
 
 

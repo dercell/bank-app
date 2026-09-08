@@ -13,7 +13,7 @@ public class CashClient {
     private final WebClient webClient;
 
     public CashClient(WebClient webClient) {
-        this.webClient = webClient.mutate().baseUrl("http://localhost:8082").build();
+        this.webClient = webClient;
     }
 
     public void chargeSum(CashOpDto body) {
@@ -21,6 +21,7 @@ public class CashClient {
             log.info("Trying to {}", body);
             webClient.put().uri("/cash")
                     .bodyValue(body)
+                    .header("Content-Type", "application/json")
                     .retrieve()
                     .toBodilessEntity()
                     .block();

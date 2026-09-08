@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode
 public class TransferDto {
 
     @JsonProperty

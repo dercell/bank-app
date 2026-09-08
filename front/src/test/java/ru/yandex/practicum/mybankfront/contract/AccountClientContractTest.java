@@ -12,6 +12,7 @@ import org.springframework.test.context.ActiveProfiles;
 import ru.yandex.practicum.mybankfront.client.AccountClient;
 import ru.yandex.practicum.mybankfront.config.ContractTestWebClientConfig;
 import ru.yandex.practicum.mybankfront.model.AccountInfoDto;
+import ru.yandex.practicum.mybankfront.model.PageInfoDto;
 
 import java.time.LocalDate;
 
@@ -32,19 +33,19 @@ class AccountClientContractTest {
     private AccountClient accountClient;
 
     @Test
-    void successGetInfo(){
+    void successGetInfo() {
 
-        AccountInfoDto accountInfoDto = accountClient.getAccByLogin("luke");
+        PageInfoDto accountInfoDto = accountClient.getAccByLogin("luke");
 
-        assertEquals("luke", accountInfoDto.getCurAccount().getLogin());
-        assertEquals("han", accountInfoDto.getAccounts().getFirst().getLogin());
+        assertEquals("luke", accountInfoDto.getUserProfileDto().getLogin());
+        assertEquals(1, accountInfoDto.getAccounts().size());
     }
 
     @Test
-    void successUpdateInfo(){
-        AccountInfoDto accountInfoDto = accountClient.updateAccount("luke", "Luke Starkiller", LocalDate.of(1970, 1, 15));
-        assertEquals("Luke Starkiller", accountInfoDto.getCurAccount().getUsername());
-        assertEquals("han", accountInfoDto.getAccounts().getFirst().getLogin());
+    void successUpdateInfo() {
+        PageInfoDto accountInfoDto = accountClient.updateAccount("luke", "Luke Starkiller", LocalDate.of(1970, 1, 15));
+        assertEquals("Luke Starkiller", accountInfoDto.getUserProfileDto().getUsername());
+        assertEquals(1, accountInfoDto.getAccounts().size());
     }
 
 }

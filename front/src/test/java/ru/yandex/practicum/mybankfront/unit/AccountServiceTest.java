@@ -1,5 +1,6 @@
 package ru.yandex.practicum.mybankfront.unit;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -7,11 +8,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.yandex.practicum.mybankfront.client.AccountClient;
-import ru.yandex.practicum.mybankfront.model.AccountDto;
-import ru.yandex.practicum.mybankfront.model.AccountInfoDto;
-import ru.yandex.practicum.mybankfront.model.AccountStripped;
+import ru.yandex.practicum.mybankfront.model.*;
 import ru.yandex.practicum.mybankfront.service.AccountService;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -33,58 +33,58 @@ class AccountServiceTest {
     private static final String TEST_LOGIN = "luke";
     private static final String TEST_USERNAME = "Luke Skywalker";
     private static final LocalDate TEST_BIRTHDATE = LocalDate.of(1990, 1, 15);
+    private PageInfoDto testDto;
 
-    private AccountInfoDto createTestAccountInfoDto() {
-        AccountDto accountDto = new AccountDto();
-        accountDto.setLogin(TEST_LOGIN);
-        accountDto.setUsername(TEST_USERNAME);
-        accountDto.setBirthDate(TEST_BIRTHDATE);
-        accountDto.setBalance(1000L);
+    @BeforeEach
+    void setUp() {
+        UserProfileDto upd = UserProfileDto.builder()
+                .login("luke")
+                .username("Luke Skywalker")
+                .birthDate(LocalDate.of(1990, 1, 15))
+                .build();
 
-        AccountStripped stripped = new AccountStripped();
-        stripped.setLogin("han");
-        stripped.setName("Han Solo");
-
-        AccountInfoDto dto = new AccountInfoDto();
-        dto.setCurAccount(accountDto);
-        dto.setAccounts(List.of(stripped));
-
-        return dto;
+        UserAccountInfoDto uaid = UserAccountInfoDto.builder()
+                .login("han").username("Han Solo").accounts(
+                        List.of(AccountDto.builder().accountNumber("asd").balance(BigDecimal.valueOf(100)).build())
+                )
+                .build();
+        testDto = new PageInfoDto();
+        testDto.setUserProfileDto(upd);
+        testDto.setCurAccounts(List.of(AccountDto.builder().accountNumber("qwe").balance(BigDecimal.valueOf(200)).build()));
+        testDto.setAccounts(List.of(uaid));
     }
 
     @Test
     void getAccByLogin_Success() {
-        AccountInfoDto expectedDto = createTestAccountInfoDto();
 
-        when(accountClient.getAccByLogin(TEST_LOGIN)).thenReturn(expectedDto);
+        when(accountClient.getAccByLogin(TEST_LOGIN)).thenReturn(testDto);
 
-        AccountInfoDto result = accountService.getAccByLogin(TEST_LOGIN);
+        PageInfoDto result = accountService.getAccByLogin(TEST_LOGIN);
 
         assertThat(result).isNotNull();
-        assertThat(result.getCurAccount()).isNotNull();
-        assertThat(result.getCurAccount().getLogin()).isEqualTo(TEST_LOGIN);
-        assertThat(result.getCurAccount().getUsername()).isEqualTo(TEST_USERNAME);
-        assertThat(result.getCurAccount().getBalance()).isEqualTo(1000L);
+        assertThat(result.getUserProfileDto()).isNotNull();
+        assertThat(result.getUserProfileDto().getLogin()).isEqualTo(TEST_LOGIN);
+        assertThat(result.getUserProfileDto().getUsername()).isEqualTo(TEST_USERNAME);
+        assertThat(result.getCurAccounts().getFirst().getBalance()).isEqualTo(BigDecimal.valueOf(200));
         assertThat(result.getAccounts()).hasSize(1);
-        assertThat(result.getAccounts().getFirst().getLogin()).isEqualTo("han");
 
         verify(accountClient).getAccByLogin(TEST_LOGIN);
     }
 
     @Test
     void updateAccount_Success() {
-        AccountInfoDto expectedDto = createTestAccountInfoDto();
-        expectedDto.getCurAccount().setUsername("Luke Starkiller");
+
+        testDto.getUserProfileDto().setUsername("Luke Starkiller");
 
         when(accountClient.updateAccount(TEST_LOGIN, TEST_USERNAME, TEST_BIRTHDATE))
-                .thenReturn(expectedDto);
+                .thenReturn(testDto);
 
-        AccountInfoDto result = accountService.updateAccount(TEST_LOGIN, TEST_USERNAME, TEST_BIRTHDATE);
+        PageInfoDto result = accountService.updateAccount(TEST_LOGIN, TEST_USERNAME, TEST_BIRTHDATE);
 
         assertThat(result).isNotNull();
-        assertThat(result.getCurAccount().getUsername()).isEqualTo("Luke Starkiller");
-        assertThat(result.getCurAccount().getLogin()).isEqualTo(TEST_LOGIN);
-        assertThat(result.getAccounts()).hasSize(1);
+        assertThat(result.getUserProfileDto().getUsername()).isEqualTo("Luke Starkiller");
+        assertThat(result.getUserProfileDto().getLogin()).isEqualTo(TEST_LOGIN);
+        assertThat(result.getCurAccounts()).hasSize(1);
 
         verify(accountClient).updateAccount(TEST_LOGIN, TEST_USERNAME, TEST_BIRTHDATE);
     }

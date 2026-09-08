@@ -17,7 +17,7 @@ import ru.yandex.practicum.transfer.service.TransferService;
 
 import java.math.BigDecimal;
 
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
@@ -42,7 +42,7 @@ public abstract class BaseTransferContractTest {
         TransferDto body = TransferDto.builder().fromAcc("lukeAcc").toAcc("hanAcc").sum(BigDecimal.valueOf(500)).build();
         RestAssuredMockMvc.mockMvc(mockMvc);
         doNothing().when(notificationClient).sendNotification(anyString());
-        when(transferService.makeTransfer(body)).thenReturn(new ServiceResultDto("Перевод выполнен: 500 со счёта lukeAcc на счёт hanAcc"));
+        when(transferService.makeTransfer(any(TransferDto.class))).thenReturn(new ServiceResultDto("Перевод выполнен: 500 со счёта lukeAcc на счёт hanAcc"));
     }
 
 }

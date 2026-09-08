@@ -7,7 +7,17 @@ Contract.make {
 
     request {
         method 'PUT'
-        url '/cash/luke?action=PUT&sum=5000'
+        url '/cash'
+        headers {
+            header 'Content-Type': 'application/json'
+        }
+        body '''
+        {
+          "action" : "PUT",
+          "accNumber" : "lukeAcc",
+          "sum" : 5000
+        }
+        '''
     }
 
     response {

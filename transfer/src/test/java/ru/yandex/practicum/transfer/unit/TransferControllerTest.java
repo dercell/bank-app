@@ -71,7 +71,7 @@ class TransferControllerTest {
                         .with(jwt().jwt(jwt -> jwt
                                 .claim("realm_access", Map.of("roles", List.of("USER", "TRANSFER_WRITE")))
                         )))
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isBadRequest());
 
         verify(transferService, times(0)).makeTransfer(body);
     }

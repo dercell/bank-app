@@ -15,13 +15,14 @@ public class TransferClient {
     private final WebClient webClient;
 
     public TransferClient(WebClient webClient) {
-        this.webClient = webClient.mutate().baseUrl("http://localhost:8085").build();
+        this.webClient = webClient;
     }
 
     public ServiceResultDto transfer(TransferDto body) {
         return webClient
                 .put().uri("/transfer/submit")
                 .bodyValue(body)
+                .header("Content-Type", "application/json")
                 .retrieve()
                 .bodyToMono(ServiceResultDto.class)
                 .block();

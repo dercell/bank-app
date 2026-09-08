@@ -18,7 +18,7 @@ public class AccountClient {
     private final WebClient webClient;
 
     public AccountClient(WebClient webClient) {
-        this.webClient = webClient.mutate().baseUrl("http://localhost:8081").build();
+        this.webClient = webClient;
     }
 
     public PageInfoDto getAccByLogin(String login) {
@@ -26,6 +26,7 @@ public class AccountClient {
             log.info("Request for user {}", login);
             PageInfoDto acc = webClient.get()
                     .uri("/accounts/info/{login}", login)
+                    .header("Content-Type", "application/json")
                     .retrieve()
                     .bodyToMono(PageInfoDto.class)
                     .block();

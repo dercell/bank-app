@@ -24,8 +24,8 @@ public class CashOpDto {
     @JsonProperty
     private String accNumber;
 
+    @Positive(message = "Сумма должна быть больше 0")
     @JsonProperty
-    @Positive
     private BigDecimal sum;
 
 }
