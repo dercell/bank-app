@@ -60,7 +60,6 @@
 - Управляет пользователями, ролями и клиентами.
 - Выдаёт JWT для UI и сервисов.
 
-
 ### Postgresql
 
 - Хранит информацию о пользовательских счетах банковского приложения
@@ -105,6 +104,49 @@ docker run -d --name bank-keycloak -p 8080:8080 --env-file ./common/keycloak/.en
 ```
 http://localhost:8080
 ```
+
+### front
+
+Для запуска UI компонента в корне проекта выполните
+
+```bash
+./mvnw spring-boot:run -pl front
+```
+
+Фронт запускается отдельно от кластера k8s, а для связи с микросервисами используется единая точка входа - ingress. Для работы в ingress необходимо настроить ingress-controller (в нашем случае это nginx-controller)
+Выполните 
+
+```bash
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+helm repo update
+helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
+  --namespace ingress-nginx \
+  --create-namespace
+```
+
+Далее находим внешний порт nginx-controller 
+```bash
+kubectl get svc -n ingress-nginx                     
+
+NAME                                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                      AGE
+ingress-nginx-controller             NodePort    10.96.204.166   <none>        80:31717/TCP,443:30651/TCP   7d19h
+```
+
+Далее указывает адрес ingress в application.yaml или в переменной окружения GATEWAY_API
+
+```yaml
+custom:
+  baseUrl:
+    api-gateway: ${GATEWAY_API:http://bank-api:31717}
+```
+
+После запуска UI будет доступен по адресу:
+
+```
+http://localhost:8083
+```
+
+
 
 ---
 
@@ -197,24 +239,10 @@ helm upgrade --install bank-app .
 helm uninstall bank-app
 ```
 
-В проекте предусмотрены тесты установки релиза. Нужно выполнить 
+В проекте предусмотрены тесты установки релиза. Нужно выполнить
 
 ```bash
 helm test bank-app 
-```
-
-### front
-
-Для запуска UI компонента в корне проекта выполните
-
-```bash
-./mvnw spring-boot:run -pl front
-```
-
-UI будет доступен по адресу:
-
-```
-http://localhost:8083
 ```
 
 # Контрактные тесты
