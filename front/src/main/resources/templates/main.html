@@ -54,9 +54,18 @@
                             </p>
                         </div>
                         <div class="form-group">
-                            <h6>Сумма на счету, руб</h6>
-                            <p th:text="${sum}"/>
+                            <h6>
+                                <label for="from_account">Счет</label>
+                            </h6>
+                            <p>
+                                <select class="form-select" id="from_account" name="accountNumber" onchange="syncSelectedAccount(this.value)" required>
+                                    <option th:each="acc : ${user_accounts}"
+                                            th:value="${acc.accountNumber}"
+                                            th:text="${acc.accountNumber + ' (баланс: ' + acc.balance + ' руб.)'}"/>
+                                </select>
+                            </p>
                         </div>
+
                         <button type="submit" class="btn btn-secondary">Сохранить изменения</button>
                     </form>
                 </div>
@@ -71,6 +80,8 @@
                 </div>
                 <div class="card-body gap-3">
                     <form method="post" th:action="@{/cash}">
+                        <input type="hidden" id="selectedCashAccount" name="fromAccountNumber"
+                               th:value="${selectedAccount}">
                         <div class="form-group">
                             <h6>
                                 <label for="cash_value">Сумма, руб.</label>
@@ -95,14 +106,19 @@
                 </div>
                 <div class="card-body gap-3">
                     <form method="post" th:action="@{/transfer}">
+                        <input type="hidden" id="selectedTransferAccount" name="fromAccountNumber"
+                               th:value="${selectedAccount}">
                         <div class="form-group">
                             <h6>
-                                <label for="to_account">Кому</label>
+                                <label for="to_account">На счет</label>
                             </h6>
                             <p>
-                                <select class="form-select" id="to_account" name="login" required>
-                                    <option th:each="account : ${accounts}" th:value="${account.login}"
-                                            th:text="${account.name}"/>
+                                <select class="form-select" id="to_account" name="toAccountNumber" required>
+                                    <optgroup th:each="r : ${recipients}" th:label="${r.username}">
+                                        <option th:each="acc : ${r.accounts}"
+                                                th:value="${acc.accountNumber}"
+                                                th:text="${acc.accountNumber}"/>
+                                    </optgroup>
                                 </select>
                             </p>
                         </div>
@@ -123,5 +139,41 @@
     </div>
 </div>
 </body>
+
+<script>
+    function syncSelectedAccount(accountNumber) {
+        document.getElementById('selectedCashAccount').value = accountNumber;
+        document.getElementById('selectedTransferAccount').value = accountNumber;
+        document.getElementById('displayAccount').textContent = accountNumber;
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const select = document.getElementById('from_account');
+        const hiddenCash = document.getElementById('selectedCashAccount');
+        const hiddenTransfer = document.getElementById('selectedTransferAccount');
+
+        if (hiddenCash && hiddenCash.value) {
+            for (let option of select.options) {
+                if (option.value === hiddenCash.value) {
+                    option.selected = true;
+                    break;
+                }
+            }
+        } else if (select && select.value) {
+            hiddenCash.value = select.value;
+        }
+
+        if (hiddenTransfer && hiddenTransfer.value) {
+            for (let option of select.options) {
+                if (option.value === hiddenTransfer.value) {
+                    option.selected = true;
+                    break;
+                }
+            }
+        } else if (select && select.value) {
+            hiddenTransfer.value = select.value;
+        }
+    });
+</script>
 
 </html>

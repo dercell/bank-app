@@ -9,20 +9,22 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
+import ru.yandex.practicum.mybankfront.client.AccountClient;
 import ru.yandex.practicum.mybankfront.config.TestSecurityConfig;
 import ru.yandex.practicum.mybankfront.controller.MainController;
-import ru.yandex.practicum.mybankfront.model.AccountDto;
-import ru.yandex.practicum.mybankfront.model.AccountInfoDto;
-import ru.yandex.practicum.mybankfront.model.CashAction;
-import ru.yandex.practicum.mybankfront.model.ServiceResultDto;
+import ru.yandex.practicum.mybankfront.model.*;
 import ru.yandex.practicum.mybankfront.service.AccountService;
 import ru.yandex.practicum.mybankfront.service.CashService;
 import ru.yandex.practicum.mybankfront.service.TransferService;
+import tools.jackson.databind.ObjectMapper;
 
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
@@ -49,61 +51,60 @@ class MainControllerTest {
     @MockitoBean
     private TransferService transferService;
 
-    private AccountInfoDto testAccountInfo;
+    private PageInfoDto testDto;
+
+    private static final ObjectMapper om = new ObjectMapper();
 
     @BeforeEach
     void setUp() {
-        AccountDto account = AccountDto.builder()
+        UserProfileDto upd = UserProfileDto.builder()
                 .login("luke")
                 .username("Luke Skywalker")
                 .birthDate(LocalDate.of(1990, 1, 15))
-                .balance(5000L)
                 .build();
 
-        testAccountInfo = AccountInfoDto.builder()
-                .curAccount(account)
-                .accounts(List.of())
+        UserAccountInfoDto uaid = UserAccountInfoDto.builder()
+                .login("han").username("Han Solo").accounts(
+                        List.of(AccountDto.builder().accountNumber("asd").balance(BigDecimal.valueOf(100)).build())
+                )
                 .build();
+        testDto = new PageInfoDto();
+        testDto.setUserProfileDto(upd);
+        testDto.setCurAccounts(List.of(AccountDto.builder().accountNumber("qwe").balance(BigDecimal.valueOf(200)).build()));
+        testDto.setAccounts(List.of(uaid));
     }
 
 
     @Test
     void getAccount_Success() throws Exception {
-        when(accountService.getAccByLogin("luke")).thenReturn(testAccountInfo);
-
-        mockMvc.perform(get("/account")
-                                .with(oidcLogin().idToken(token -> token.subject("luke")))
-                )
-                .andExpect(status().isOk())
-                .andExpect(view().name("main"))
-                .andExpect(model().attribute("name", "Luke Skywalker"))
-                .andExpect(model().attribute("sum", 5000L));
-
-        verify(accountService, times(1)).getAccByLogin("luke");
-    }
-
-    @Test
-    void getAccount_WithNoUsername_ShouldReturnMainView() throws Exception {
-        AccountDto accountWithoutName = AccountDto.builder()
-                .login("luke")
-                .birthDate(LocalDate.of(1990, 1, 15))
-                .balance(5000L)
-                .build();
-
-        AccountInfoDto infoWithoutName = AccountInfoDto.builder()
-                .curAccount(accountWithoutName)
-                .accounts(List.of())
-                .build();
-
-        when(accountService.getAccByLogin("luke")).thenReturn(infoWithoutName);
+        when(accountService.getAccByLogin("luke")).thenReturn(testDto);
 
         mockMvc.perform(get("/account")
                         .with(oidcLogin().idToken(token -> token.subject("luke")))
                 )
                 .andExpect(status().isOk())
                 .andExpect(view().name("main"))
+                .andExpect(model().attribute("name", "Luke Skywalker"))
+                .andExpect(model().attribute("user_accounts", hasSize(1)));
+
+        verify(accountService, times(1)).getAccByLogin("luke");
+    }
+
+    @Test
+    void getAccount_WithNoUsername_ShouldReturnProfileView() throws Exception {
+
+        ServiceResultDto res = new ServiceResultDto("AccountNotExists", "Профиль пользователя luke отсутствует");
+        WebClientResponseException we = WebClientResponseException.create(400, null, null, om.writeValueAsBytes(res), null);
+
+        when(accountService.getAccByLogin("luke")).thenThrow(we);
+
+        mockMvc.perform(get("/account")
+                        .with(oidcLogin().idToken(token -> token.subject("luke")))
+                )
+                .andExpect(status().isOk())
+                .andExpect(view().name("profile"))
                 .andExpect(model().attribute("name", nullValue()))
-                .andExpect(model().attribute("sum", 5000L));
+                .andExpect(model().attribute("birthdate", nullValue()));
 
         verify(accountService, times(1)).getAccByLogin("luke");
     }
@@ -119,7 +120,7 @@ class MainControllerTest {
     @Test
     void editAccount_Success() throws Exception {
         when(accountService.updateAccount(eq("luke"), anyString(), any(LocalDate.class)))
-                .thenReturn(testAccountInfo);
+                .thenReturn(testDto);
 
         mockMvc.perform(post("/account")
                         .param("name", "Luke Skywalker")
@@ -163,37 +164,39 @@ class MainControllerTest {
 
     @Test
     void editCash_WithDeposit_Success() throws Exception {
-        doNothing().when(cashService).editCash("luke", CashAction.PUT, 1000);
-        when(accountService.getAccByLogin("luke")).thenReturn(testAccountInfo);
+        doNothing().when(cashService).editCash("luke", CashAction.PUT, BigDecimal.valueOf(1000));
+        when(accountService.getAccByLogin("luke")).thenReturn(testDto);
 
         mockMvc.perform(post("/cash")
                         .param("value", "1000")
                         .param("action", "PUT")
+                        .param("fromAccountNumber", "luke")
                         .with(oidcLogin().idToken(token -> token.subject("luke")))
                 )
                 .andExpect(status().isOk())
                 .andExpect(view().name("main"))
-                .andExpect(model().attribute("info", "Положено 1000 руб"));
+                .andExpect(model().attribute("info", "Положено 1000,00 руб"));
 
-        verify(cashService, times(1)).editCash("luke", CashAction.PUT, 1000);
+        verify(cashService, times(1)).editCash("luke", CashAction.PUT, BigDecimal.valueOf(1000));
         verify(accountService, times(1)).getAccByLogin("luke");
     }
 
     @Test
     void editCash_WithWithdraw_Success() throws Exception {
-        doNothing().when(cashService).editCash("luke", CashAction.GET, 500);
-        when(accountService.getAccByLogin("luke")).thenReturn(testAccountInfo);
+        doNothing().when(cashService).editCash("luke", CashAction.GET, BigDecimal.valueOf(500));
+        when(accountService.getAccByLogin("luke")).thenReturn(testDto);
 
         mockMvc.perform(post("/cash")
                         .param("value", "500")
                         .param("action", "GET")
+                        .param("fromAccountNumber", "luke")
                         .with(oidcLogin().idToken(token -> token.subject("luke")))
                 )
                 .andExpect(status().isOk())
                 .andExpect(view().name("main"))
-                .andExpect(model().attribute("info", "Снято 500 руб"));
+                .andExpect(model().attribute("info", "Снято 500,00 руб"));
 
-        verify(cashService, times(1)).editCash("luke", CashAction.GET, 500);
+        verify(cashService, times(1)).editCash("luke", CashAction.GET, BigDecimal.valueOf(500));
         verify(accountService, times(1)).getAccByLogin("luke");
     }
 
@@ -201,12 +204,12 @@ class MainControllerTest {
     void editCash_Error() throws Exception {
         String errorMessage = "Недостаточно средств";
         doThrow(new RuntimeException(errorMessage))
-                .when(cashService).editCash("luke", CashAction.GET, 999999);
-        when(accountService.getAccByLogin("luke")).thenReturn(testAccountInfo);
+                .when(cashService).editCash("luke", CashAction.GET, BigDecimal.valueOf(999999));
 
         mockMvc.perform(post("/cash")
                         .param("value", "999999")
                         .param("action", "GET")
+                        .param("fromAccountNumber", "luke")
                         .with(oidcLogin().idToken(token -> token.subject("luke")))
                 )
                 .andExpect(status().isOk())
@@ -214,20 +217,20 @@ class MainControllerTest {
                 .andExpect(model().attribute("errors", List.of(errorMessage)))
                 .andExpect(model().attribute("info", nullValue()));
 
-        verify(cashService, times(1)).editCash("luke", CashAction.GET, 999999);
-        verify(accountService, times(1)).getAccByLogin("luke");
+        verify(cashService, times(1)).editCash("luke", CashAction.GET, BigDecimal.valueOf(999999));
     }
 
 
     @Test
     void transfer_Success() throws Exception {
-        when(transferService.makeTransfer("luke", "han", 1000))
+        when(transferService.makeTransfer("luke", "han", BigDecimal.valueOf(1000)))
                 .thenReturn(new ServiceResultDto("Перевод выполнен: 1000 со счёта luke на счёт han"));
-        when(accountService.getAccByLogin("luke")).thenReturn(testAccountInfo);
+        when(accountService.getAccByLogin("luke")).thenReturn(testDto);
 
         mockMvc.perform(post("/transfer")
                         .param("value", "1000")
-                        .param("login", "han")
+                        .param("fromAccountNumber", "luke")
+                        .param("toAccountNumber", "han")
                         .with(oidcLogin().idToken(token -> token.subject("luke")))
                 )
                 .andExpect(status().isOk())
@@ -235,19 +238,20 @@ class MainControllerTest {
                 .andExpect(model().attribute("info", "Перевод выполнен: 1000 со счёта luke на счёт han"))
                 .andExpect(model().attribute("name", "Luke Skywalker"));
 
-        verify(transferService, times(1)).makeTransfer("luke", "han", 1000);
+        verify(transferService, times(1)).makeTransfer("luke", "han", BigDecimal.valueOf(1000));
         verify(accountService, times(1)).getAccByLogin("luke");
     }
 
     @Test
     void transfer_Error() throws Exception {
-        when(transferService.makeTransfer("luke", "han", 999999))
+        when(transferService.makeTransfer("luke", "han", BigDecimal.valueOf(999999)))
                 .thenThrow(new RuntimeException("Недостаточно средств"));
-        when(accountService.getAccByLogin("luke")).thenReturn(testAccountInfo);
+        when(accountService.getAccByLogin("luke")).thenReturn(testDto);
 
         mockMvc.perform(post("/transfer")
                         .param("value", "999999")
-                        .param("login", "han")
+                        .param("fromAccountNumber", "luke")
+                        .param("toAccountNumber", "han")
                         .with(oidcLogin().idToken(token -> token.subject("luke")))
                 )
                 .andExpect(status().isOk())
@@ -255,7 +259,7 @@ class MainControllerTest {
                 .andExpect(model().attribute("errors", List.of("Недостаточно средств")))
                 .andExpect(model().attribute("info", nullValue()));
 
-        verify(transferService, times(1)).makeTransfer("luke", "han", 999999);
+        verify(transferService, times(1)).makeTransfer("luke", "han", BigDecimal.valueOf(999999));
         verify(accountService, times(0)).getAccByLogin("luke");
     }
 

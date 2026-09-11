@@ -3,8 +3,9 @@ package ru.yandex.practicum.transfer.client;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import ru.yandex.practicum.transfer.dto.ServiceResultDto;
+import ru.yandex.practicum.transfer.dto.TransferDto;
 
 @Slf4j
 @Component
@@ -16,19 +17,23 @@ public class AccountClient {
         this.webClient = webClient;
     }
 
-    public ServiceResultDto transfer(String from, String to, int sum) {
-        return webClient
-                .put().uri(uriBuilder -> uriBuilder
-                        .path("/accounts/transfer")
-                        .queryParam("from", from)
-                        .queryParam("to", to)
-                        .queryParam("sum", sum)
-                        .build())
-                .header("Content-Type", "application/json")
-                .retrieve()
-                .bodyToMono(ServiceResultDto.class)
-                .onErrorResume(throwable -> Mono.just(new ServiceResultDto("Ошибка при обращении к account-service: " + throwable.getMessage())))
-                .block();
+    public ServiceResultDto transfer(TransferDto body) {
+        try {
+            return webClient
+                    .put().uri("/accounts/transfer")
+                    .bodyValue(body)
+                    .header("Content-Type", "application/json")
+                    .retrieve()
+                    .bodyToMono(ServiceResultDto.class)
+                    .block();
+        } catch (WebClientResponseException e) {
+            log.error("WebClientResponseException in AccountClient transfer: {}: {}", e.getMessage(), e.getResponseBodyAsString(), e);
+            throw e;
+        } catch (Exception error) {
+            log.error("Error while transfer: {}", error.getMessage(), error);
+            throw error;
+        }
+
     }
 
 }

@@ -17,20 +17,24 @@ Contract.make {
         }
         body '''
         {
-            "curAccount":
-                {
-                    "id":null,
-                    "login":"luke",
-                    "username":"Luke Skywalker",
-                    "birthDate":"1990-01-15",
-                    "balance":1000
-                },
+            "userProfileDto":{
+                "login":"luke",
+                "username":"Luke Skywalker",
+                "birthDate":"1990-01-15"
+            },
+            "curAccounts":[
+                {"accountNumber":"qwe","balance":200}
+            ],
             "accounts":[
                 {
                     "login":"han",
-                    "username":"Han Solo"
-                }]
-            }
+                    "username":"Han Solo",
+                    "accounts":[
+                        {"accountNumber":"asd","balance":100}
+                    ]
+                }
+            ]
+        }
         '''
     }
 }

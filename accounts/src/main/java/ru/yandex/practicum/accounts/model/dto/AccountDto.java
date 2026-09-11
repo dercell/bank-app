@@ -2,9 +2,8 @@ package ru.yandex.practicum.accounts.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
-import ru.yandex.practicum.accounts.model.entity.Account;
 
-import java.util.List;
+import java.math.BigDecimal;
 
 @Getter
 @Setter
@@ -15,10 +14,9 @@ import java.util.List;
 public class AccountDto {
 
     @JsonProperty
-    private Account curAccount;
+    private String accountNumber;
 
     @JsonProperty
-    private List<AccountStripped> accounts;
-
+    private BigDecimal balance;
 
 }

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8">
+    <title>Редактирование профиля</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+</head>
+
+<body class="bg-light">
+
+<!-- Блоки сообщений об ошибках и информации (как в оригинале) -->
+<div class="alert alert-danger vstack" role="alert" th:if="${errors!=null}" th:each="error : ${errors}">
+    <span th:text="${error}"/>
+</div>
+<div class="alert alert-success" role="alert" th:if="${info!=null}" th:text="${info}"/>
+
+<div class="container p-2">
+    <!-- Верхняя панель с логотипом и кнопкой выхода -->
+    <div class="row p-2">
+        <div class="col">
+            <div class="hstack gap-3">
+                <h2>
+                    <span class="badge text-bg-info text-white">Банк</span>
+                </h2>
+                <div class="d-flex ms-auto">
+                    <a th:href="@{/logout}" class="btn btn-secondary bi bi-box-arrow-in-left"> Выйти</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row p-2">
+        <div class="col">
+            <div class="card">
+                <div class="card-header">
+                    Личные данные
+                </div>
+                <div class="card-body gap-3">
+                    <form method="post" th:action="@{/account/register}">
+                        <div class="form-group">
+                            <h6>
+                                <label for="username">Фамилия Имя</label>
+                            </h6>
+                            <p>
+                                <input type="text" class="form-control" id="username" name="username"
+                                       placeholder="Иванов Иван" th:value="${username}" required>
+                            </p>
+                        </div>
+                        <div class="form-group">
+                            <h6>
+                                <label for="birthdate">Дата рождения</label>
+                            </h6>
+                            <p>
+                                <input type="date" class="form-control" name="birthdate" id="birthdate"
+                                       th:value="${birthdate}" required>
+                            </p>
+                        </div>
+                        <div class="hstack gap-2">
+                            <button type="submit" class="btn btn-secondary">Сохранить</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
