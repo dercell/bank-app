@@ -9,7 +9,7 @@ import ru.yandex.practicum.notification.model.LogEntity;
 @Service
 public class NotificationKafkaListener {
 
-    @KafkaListener(topics = "${app.kafka.notification-topic}")
+    @KafkaListener(topics = "${custom.kafka.notification-topic}")
     public void handlerNotification(LogEntity logEntity){
         log.info("Send notification about {}", logEntity);
     }
