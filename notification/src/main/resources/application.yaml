@@ -3,11 +3,24 @@ spring:
     active: prod
   application:
     name: notification
+
+  bootstrap-servers: localhost:9092
+  consumer:
+    group-id: my-app-group
+    auto-offset-reset: earliest
+    key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    value-deserializer: org.springframework.kafka.support.serializer.JacksonJsonDeserializer
+    properties:
+      spring.json.trusted.packages: ru.yandex.practicum.transfer.dto,ru.yandex.practicum.cash.dto,ru.yandex.practicum.accounts.models.dto
   security:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri:  ${KEYCLOAK_ISSUER_URI:http://host.docker.internal:8080/realms/bank-app}
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://host.docker.internal:8080/realms/bank-app}
+
+app:
+  kafka:
+    notification-topic: ${BANK_APP_NOTIFICATION_TOPIC:bank-app-notification}
 
 management:
   endpoints:
