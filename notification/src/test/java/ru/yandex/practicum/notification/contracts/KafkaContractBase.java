@@ -27,11 +27,33 @@ public abstract class KafkaContractBase {
     @Autowired
     private KafkaTemplate<UUID, LogEntity> kafkaTemplate;
 
-    public void triggerLogEntity() {
+    public void cashNotification() {
 
         LogEntity le = new LogEntity();
         le.setSourceService(SourceService.CASH);
         le.setMessage("Снято %.2f руб".formatted(BigDecimal.valueOf(50)));
+        UUID key = UUID.randomUUID();
+
+        kafkaTemplate.send(TEST_TOPIC_NAME, key, le);
+        log.info("Send {} with key {} to topic {}", le, key, TEST_TOPIC_NAME);
+    }
+
+    public void transferNotification() {
+
+        LogEntity le = new LogEntity();
+        le.setSourceService(SourceService.TRANSFER);
+        le.setMessage("Перевод выполнен: %.2f со счёта lukeAcc на счёт hanAcc".formatted(BigDecimal.valueOf(500)));
+        UUID key = UUID.randomUUID();
+
+        kafkaTemplate.send(TEST_TOPIC_NAME, key, le);
+        log.info("Send {} with key {} to topic {}", le, key, TEST_TOPIC_NAME);
+    }
+
+    public void accountsNotification() {
+
+        LogEntity le = new LogEntity();
+        le.setSourceService(SourceService.ACCOUNTS);
+        le.setMessage("Профиль luke обновлен");
         UUID key = UUID.randomUUID();
 
         kafkaTemplate.send(TEST_TOPIC_NAME, key, le);
