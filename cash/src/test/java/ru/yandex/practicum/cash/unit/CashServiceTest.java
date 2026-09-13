@@ -8,10 +8,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.yandex.practicum.cash.client.AccountClient;
-import ru.yandex.practicum.cash.client.NotificationClient;
 import ru.yandex.practicum.cash.dto.CashAction;
 import ru.yandex.practicum.cash.dto.CashOpDto;
 import ru.yandex.practicum.cash.service.CashService;
+import ru.yandex.practicum.cash.service.NotificationProducer;
 
 import java.math.BigDecimal;
 
@@ -26,7 +26,7 @@ class CashServiceTest {
     private AccountClient accountClient;
 
     @Mock
-    private NotificationClient notificationClient;
+    private NotificationProducer notificationProducer;
 
     @InjectMocks
     private CashService cashService;
@@ -41,7 +41,7 @@ class CashServiceTest {
         cashService.chargeSum(body);
 
         verify(accountClient).chargeBalance(body);
-        verify(notificationClient).sendNotification("Положено 500,00 руб");
+        verify(notificationProducer).sendNotification("Положено 500,00 руб");
     }
 
     @Test
@@ -50,7 +50,7 @@ class CashServiceTest {
         cashService.chargeSum(body);
 
         verify(accountClient).chargeBalance(body);
-        verify(notificationClient).sendNotification("Снято 500,00 руб");
+        verify(notificationProducer).sendNotification("Снято 500,00 руб");
     }
 
     @Test
@@ -65,6 +65,6 @@ class CashServiceTest {
                 () -> cashService.chargeSum(body));
 
         verify(accountClient).chargeBalance(body);
-        verify(notificationClient, never()).sendNotification(anyString());
+        verify(notificationProducer, never()).sendNotification(anyString());
     }
 }

@@ -18,10 +18,21 @@ spring:
         provider:
           keycloak:
             issuer-uri: ${KEYCLOAK_ISSUER_URI:http://host.docker.internal:8080/realms/bank-app}
+  kafka:
+    bootstrap-servers: ${KAFKA_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.UUIDSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JacksonJsonSerializer
+      properties:
+        spring.json.trusted.packages: ru.yandex.practicum.cash.dto
+
+
 
 custom:
   baseUrl:
     api-gateway: ${BANK_API_URL:http://localhost:8081}
+  kafka:
+    notification-topic: ${BANK_APP_NOTIFICATION_TOPIC:bank-app-notification}
 
 management:
   endpoints:
