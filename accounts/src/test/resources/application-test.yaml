@@ -1,19 +1,4 @@
 spring:
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: http://host.docker.internal:8080/realms/bank-app
-      client:
-        registration:
-          keycloak:
-            client-id: accounts-service
-            client-secret: z4YSPCjeXtZWb5qkwaL0YOrRGs4TP2Go
-            authorization-grant-type: client_credentials
-            scope: openid
-        provider:
-          keycloak:
-            issuer-uri: http://host.docker.internal:8080/realms/bank-app
   sql:
     init:
       mode: always

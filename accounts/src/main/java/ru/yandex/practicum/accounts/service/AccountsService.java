@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.yandex.practicum.accounts.client.NotificationClient;
 import ru.yandex.practicum.accounts.exceptions.*;
 import ru.yandex.practicum.accounts.model.dto.*;
 import ru.yandex.practicum.accounts.model.entity.BankAccount;
@@ -26,7 +25,7 @@ public class AccountsService {
     private final UserProfileRepository userProfileRepository;
     private final BankAccountRepository bankAccountRepository;
 
-    private final NotificationClient notificationClient;
+    private final NotificationProducer notificationProducer;
 
     public UserProfile getAccountByLogin(String login) {
         return userProfileRepository.getAccountByLogin(login).orElseThrow(() -> new AccountNotExists("Аккаунта " + login + " не существует"));
@@ -79,7 +78,7 @@ public class AccountsService {
         currentUser.setBirthDate(bdate);
 
         userProfileRepository.save(currentUser);
-        notificationClient.sendNotification("Профиль %s обновлен".formatted(login));
+        notificationProducer.sendNotification("Профиль %s обновлен".formatted(login));
         return getAccountInfo(login);
 
     }

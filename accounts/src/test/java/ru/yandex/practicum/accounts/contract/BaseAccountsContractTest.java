@@ -9,10 +9,11 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import ru.yandex.practicum.accounts.client.NotificationClient;
+import ru.yandex.practicum.accounts.AccountsApplication;
 import ru.yandex.practicum.accounts.config.ContractTestSecurityConfig;
 import ru.yandex.practicum.accounts.model.dto.*;
 import ru.yandex.practicum.accounts.service.AccountsService;
+import ru.yandex.practicum.accounts.service.NotificationProducer;
 
 
 import java.math.BigDecimal;
@@ -24,7 +25,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
-@SpringBootTest
+@SpringBootTest(classes = AccountsApplication.class)
 @AutoConfigureMockMvc
 @ActiveProfiles("contract-test")
 @Import(ContractTestSecurityConfig.class)
@@ -37,7 +38,7 @@ public abstract class BaseAccountsContractTest {
     protected AccountsService accountsService;
 
     @MockitoBean
-    private NotificationClient notificationClient;
+    private NotificationProducer notificationProducer;
 
 
     @BeforeEach
@@ -47,7 +48,7 @@ public abstract class BaseAccountsContractTest {
     }
 
     private void setupMocks() {
-        doNothing().when(notificationClient).sendNotification(anyString());
+        doNothing().when(notificationProducer).sendNotification(anyString());
         TransferDto body = TransferDto.builder().fromAcc("lukeAcc").toAcc("hanAcc").sum(BigDecimal.valueOf(500)).build();
         doNothing().when(accountsService).transfer(body);
 

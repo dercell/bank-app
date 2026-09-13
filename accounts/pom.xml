@@ -59,18 +59,36 @@
             <artifactId>h2</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-kafka</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-kafka-test</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
             <plugin>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-contract-maven-plugin</artifactId>
+                <version>5.0.3</version>
                 <extensions>true</extensions>
+
                 <configuration>
                     <testMode>MOCKMVC</testMode>
-                    <baseClassForTests>
-                        ru.yandex.practicum.accounts.contract.BaseAccountsContractTest
-                    </baseClassForTests>
+                    <baseClassMappings>
+                        <baseClassMapping>
+                            <contractPackageRegex>.*rest.*</contractPackageRegex>
+                            <baseClassFQN>ru.yandex.practicum.accounts.contract.BaseAccountsContractTest</baseClassFQN>
+                        </baseClassMapping>
+                        <baseClassMapping>
+                            <contractPackageRegex>.*messaging.*</contractPackageRegex>
+                            <baseClassFQN>ru.yandex.practicum.accounts.contract.KafkaContractBase</baseClassFQN>
+                        </baseClassMapping>
+                    </baseClassMappings>
                 </configuration>
             </plugin>
         </plugins>

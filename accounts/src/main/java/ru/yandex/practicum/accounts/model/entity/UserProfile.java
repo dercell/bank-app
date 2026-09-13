@@ -15,6 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 @Entity
 @Table(name = "user_profile")
+@EqualsAndHashCode
 public class UserProfile {
 
     @Id

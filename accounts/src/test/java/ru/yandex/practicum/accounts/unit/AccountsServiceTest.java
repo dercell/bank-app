@@ -7,7 +7,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import ru.yandex.practicum.accounts.client.NotificationClient;
 import ru.yandex.practicum.accounts.exceptions.NotEnoughMoneyException;
 import ru.yandex.practicum.accounts.model.CashAction;
 import ru.yandex.practicum.accounts.model.dto.CashOpDto;
@@ -17,6 +16,7 @@ import ru.yandex.practicum.accounts.model.entity.UserProfile;
 import ru.yandex.practicum.accounts.repository.BankAccountRepository;
 import ru.yandex.practicum.accounts.repository.UserProfileRepository;
 import ru.yandex.practicum.accounts.service.AccountsService;
+import ru.yandex.practicum.accounts.service.NotificationProducer;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -40,7 +40,7 @@ class AccountsServiceTest {
     private BankAccountRepository bankAccountRepository;
 
     @Mock
-    private NotificationClient notificationClient;
+    private NotificationProducer notificationProducer;
 
 
     @InjectMocks
@@ -118,7 +118,7 @@ class AccountsServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.getUserProfileDto().getUsername()).isEqualTo(newName);
         verify(userProfileRepository).save(userProfile);
-        verify(notificationClient).sendNotification(anyString());
+        verify(notificationProducer).sendNotification(anyString());
     }
 
     @Test
