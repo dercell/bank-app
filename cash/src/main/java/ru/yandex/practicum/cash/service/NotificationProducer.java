@@ -12,13 +12,16 @@ import java.util.UUID;
 
 @Slf4j
 @Service
-@AllArgsConstructor
 public class NotificationProducer {
 
     private KafkaTemplate<UUID, LogEntity> kafkaTemplate;
 
     @Value("${custom.kafka.notification-topic}")
-    private static String TOPIC_NAME;
+    private String TOPIC_NAME;
+
+    public NotificationProducer(KafkaTemplate<UUID, LogEntity> kafkaTemplate) {
+        this.kafkaTemplate = kafkaTemplate;
+    }
 
     public void sendNotification(String message) {
 

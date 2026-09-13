@@ -50,13 +50,19 @@
 			<plugin>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-contract-maven-plugin</artifactId>
-				<extensions>true</extensions>
-				<configuration>
-					<testMode>MOCKMVC</testMode>
-					<baseClassForTests>
-						ru.yandex.practicum.cash.contract.BaseCashContractTest
-					</baseClassForTests>
-				</configuration>
+                <configuration>
+                    <testMode>MOCKMVC</testMode>
+                    <baseClassMappings>
+                        <baseClassMapping>
+                            <contractPackageRegex>.*\.rest.*</contractPackageRegex>
+                            <baseClassClass>ru.yandex.practicum.cash.contract.BaseCashContractTest</baseClassClass>
+                        </baseClassMapping>
+                        <baseClassMapping>
+                            <contractPackageRegex>.*\.message.*</contractPackageRegex>
+                            <baseClassClass>ru.yandex.practicum.cash.contract.KafkaContractBase</baseClassClass>
+                        </baseClassMapping>
+                    </baseClassMappings>
+                </configuration>
 			</plugin>
 		</plugins>
 	</build>

@@ -4,7 +4,10 @@ spring:
       enabled: false
       import-check:
         enabled: false
+  kafka:
+    bootstrap-servers: ${spring.embedded.kafka.brokers:localhost:9092}
 custom:
   baseUrl:
     api-gateway: http://localhost:8888
-
+  kafka:
+    notification-topic: ${BANK_APP_NOTIFICATION_TOPIC:bank-app-notification}
