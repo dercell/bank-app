@@ -9,7 +9,7 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.UUIDSerializer
       value-serializer: org.springframework.kafka.support.serializer.JacksonJsonSerializer
       properties:
-        spring.json.trusted.packages: ru.yandex.practicum.cash.model
+        spring.json.trusted.packages: ru.yandex.practicum.transfer.dto
   security:
     oauth2:
       resourceserver:
