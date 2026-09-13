@@ -16,7 +16,6 @@ spring:
         jwt:
           issuer-uri: ${KEYCLOAK_ISSUER_URI:http://host.docker.internal:8080/realms/bank-app}
 
-
 custom:
   baseUrl:
     api-gateway: ${BANK_API_URL:http://localhost:8081}

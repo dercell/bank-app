@@ -12,10 +12,10 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.yandex.practicum.transfer.client.AccountClient;
-import ru.yandex.practicum.transfer.client.NotificationClient;
 import ru.yandex.practicum.transfer.config.TestSecurityConfig;
 import ru.yandex.practicum.transfer.dto.ServiceResultDto;
 import ru.yandex.practicum.transfer.dto.TransferDto;
+import ru.yandex.practicum.transfer.service.NotificationProducer;
 import wiremock.com.fasterxml.jackson.databind.ObjectMapper;
 
 
@@ -44,7 +44,7 @@ class TransferControllerIntegrationTest {
     private AccountClient accountClient;
 
     @MockitoBean
-    private NotificationClient notificationClient;
+    private NotificationProducer notificationProducer;
 
     private static final ObjectMapper om = new ObjectMapper();
     private static final TransferDto TEST_BODY = TransferDto.builder().fromAcc("lukeAcc").toAcc("hanAcc").sum(BigDecimal.valueOf(1000)).build();
@@ -54,7 +54,7 @@ class TransferControllerIntegrationTest {
     void transfer_Success() throws Exception {
         ServiceResultDto expectedResponse = new ServiceResultDto("Перевод выполнен: 1000 со счёта luke на счёт han");
         when(accountClient.transfer(any(TransferDto.class))).thenReturn(expectedResponse);
-        doNothing().when(notificationClient).sendNotification(anyString());
+        doNothing().when(notificationProducer).sendNotification(anyString());
 
         mockMvc.perform(put("/transfer/submit")
                         .contentType(MediaType.APPLICATION_JSON)
