@@ -1,6 +1,5 @@
 package ru.yandex.practicum.cash.service;
 
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -31,7 +30,15 @@ public class NotificationProducer {
         le.setSourceService(SourceService.CASH);
         le.setMessage(message);
 
-        kafkaTemplate.send(TOPIC_NAME, msgKey, le);
+        kafkaTemplate.send(TOPIC_NAME, msgKey, le)
+                .whenComplete((result, ex) -> {
+                    if (ex != null) {
+                        log.error("Failed to send {} with key {} to topic {}", le, msgKey, TOPIC_NAME, ex);
+                    } else {
+                        log.info("Sent {} with key {} to topic {}, offset={}",
+                                le, msgKey, TOPIC_NAME, result.getRecordMetadata().offset());
+                    }
+                });
         log.info("Message send");
     }
 
