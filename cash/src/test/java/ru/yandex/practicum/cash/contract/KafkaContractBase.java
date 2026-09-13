@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import ru.yandex.practicum.cash.CashApplication;
 import ru.yandex.practicum.cash.client.AccountClient;
 import ru.yandex.practicum.cash.config.KafkaContractTestConfig;
 import ru.yandex.practicum.cash.dto.CashAction;
@@ -18,7 +19,7 @@ import java.math.BigDecimal;
 
 @Slf4j
 @AutoConfigureMessageVerifier
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
+@SpringBootTest(classes = CashApplication.class, webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @ActiveProfiles("contract-test")
 @Import(KafkaContractTestConfig.class)
 @EmbeddedKafka(topics = {KafkaContractBase.TEST_TOPIC_NAME}, partitions = 1)

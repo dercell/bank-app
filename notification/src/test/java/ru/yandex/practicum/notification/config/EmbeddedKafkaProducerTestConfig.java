@@ -11,15 +11,13 @@ import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
 import ru.yandex.practicum.notification.model.LogEntity;
 
-import java.util.Map;
 import java.util.UUID;
 
 @TestConfiguration
-public class KafkaProducerConfig {
+public class EmbeddedKafkaProducerTestConfig {
 
     @Bean
     public ProducerFactory<UUID, LogEntity> producerFactory(EmbeddedKafkaBroker embeddedKafkaBroker) {
-
         return new DefaultKafkaProducerFactory<>(KafkaTestUtils.producerProps(embeddedKafkaBroker),
                 new UUIDSerializer(),
                 new JacksonJsonSerializer<>());
@@ -29,10 +27,5 @@ public class KafkaProducerConfig {
     public KafkaTemplate<UUID, LogEntity> kafkaTemplate(ProducerFactory<UUID, LogEntity> pf) {
         return new KafkaTemplate<>(pf);
     }
-
-    @Bean
-    public KafkaMessageVerifier kafkaMessageVerifier() {
-        return new KafkaMessageVerifier();
-    }
-
 }
+

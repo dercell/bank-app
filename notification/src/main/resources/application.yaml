@@ -11,7 +11,9 @@ spring:
       key-deserializer: org.apache.kafka.common.serialization.UUIDDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JacksonJsonDeserializer
       properties:
-        spring.json.trusted.packages: ru.yandex.practicum.notification.model,ru.yandex.practicum.transfer.dto,ru.yandex.practicum.cash.dto,ru.yandex.practicum.accounts.models.dto
+        spring.json.use.type.headers: false
+        spring.json.value.default.type: ru.yandex.practicum.notification.model.LogEntity
+        spring.json.trusted.packages: ru.yandex.practicum.notification.model
 
 custom:
   kafka:

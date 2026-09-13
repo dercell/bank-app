@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import ru.yandex.practicum.cash.CashApplication;
 import ru.yandex.practicum.cash.config.ContractTestSecurityConfig;
 import ru.yandex.practicum.cash.config.ContractTestWebClientConfig;
 import ru.yandex.practicum.cash.dto.CashOpDto;
@@ -18,7 +19,7 @@ import ru.yandex.practicum.cash.service.NotificationProducer;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doNothing;
 
-@SpringBootTest
+@SpringBootTest(classes = CashApplication.class)
 @AutoConfigureMockMvc
 @ActiveProfiles("contract-test")
 @Import({ContractTestSecurityConfig.class, ContractTestWebClientConfig.class})

@@ -13,9 +13,8 @@ import org.springframework.kafka.listener.MessageListenerContainer;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.kafka.test.utils.ContainerTestUtils;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
-import ru.yandex.practicum.notification.config.KafkaProducerConfig;
+import ru.yandex.practicum.notification.config.EmbeddedKafkaProducerTestConfig;
 import ru.yandex.practicum.notification.model.LogEntity;
 import ru.yandex.practicum.notification.model.SourceService;
 import ru.yandex.practicum.notification.service.NotificationKafkaListener;
@@ -29,8 +28,8 @@ import static ru.yandex.practicum.notification.integration.NotificationKafkaList
 
 @Tag("integration")
 @SpringBootTest
-@Import({KafkaProducerConfig.class})
-@EmbeddedKafka(topics = {TEST_TOPIC_NAME}, partitions = 1)
+@Import({EmbeddedKafkaProducerTestConfig.class})
+@EmbeddedKafka(topics = {TEST_TOPIC_NAME}, partitions = 1, bootstrapServersProperty = "spring.kafka.bootstrap-servers")
 class NotificationKafkaListenerEmbeddedTest {
 
     public static final String TEST_TOPIC_NAME = "bank-app-notification";

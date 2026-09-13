@@ -1,12 +1,10 @@
-package contracts
-
 import org.springframework.cloud.contract.spec.Contract
 
 Contract.make {
-    description "Notification of Cash Event"
-    label "log_entity_event"
+    description "Notification of Cash Withdrawal Event"
+    label "cash_notification_event"
     input {
-        triggeredBy("cashNotification()")
+        triggeredBy("triggerWithdrawal()")
     }
     outputMessage {
         sentTo "bank-app-notification"
