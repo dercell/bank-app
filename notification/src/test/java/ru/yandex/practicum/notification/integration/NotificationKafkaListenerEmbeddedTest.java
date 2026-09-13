@@ -2,6 +2,7 @@ package ru.yandex.practicum.notification.integration;
 
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -26,6 +27,7 @@ import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static ru.yandex.practicum.notification.integration.NotificationKafkaListenerEmbeddedTest.TEST_TOPIC_NAME;
 
+@Tag("integration")
 @SpringBootTest
 @Import({KafkaProducerConfig.class})
 @EmbeddedKafka(topics = {TEST_TOPIC_NAME}, partitions = 1)
@@ -61,7 +63,7 @@ class NotificationKafkaListenerEmbeddedTest {
 
         kafkaTemplate.send(TEST_TOPIC_NAME, UUID.randomUUID(), le).join();
 
-        verify(notificationKafkaListener, timeout(10_000))
+        verify(notificationKafkaListener, timeout(5_000))
                 .handlerNotification(le);
 
     }
