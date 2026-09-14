@@ -15,7 +15,7 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 @Configuration
 @EnableWebSecurity
-@Profile("!test")
+@Profile("prod")
 public class SecurityConfig {
 
     @Autowired

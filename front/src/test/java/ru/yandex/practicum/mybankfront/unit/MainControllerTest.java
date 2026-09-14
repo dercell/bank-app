@@ -10,7 +10,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
-import ru.yandex.practicum.mybankfront.client.AccountClient;
 import ru.yandex.practicum.mybankfront.config.TestSecurityConfig;
 import ru.yandex.practicum.mybankfront.controller.MainController;
 import ru.yandex.practicum.mybankfront.model.*;
@@ -34,9 +33,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @Tag("unit")
 @Tag("controller")
+@ActiveProfiles("test")
 @WebMvcTest(MainController.class)
 @Import(TestSecurityConfig.class)
-@ActiveProfiles("test")
 class MainControllerTest {
 
     @Autowired
