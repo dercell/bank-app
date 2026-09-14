@@ -8,7 +8,17 @@ Contract.make {
 
     request {
         method 'PUT'
-        url '/transfer/submit?from=luke&to=han&sum=500'
+        url '/transfer/submit'
+        headers {
+            header 'Content-Type': 'application/json'
+        }
+        body '''
+        {
+            "fromAcc" : "lukeAcc",
+            "toAcc" : "hanAcc",
+            "sum" : 500
+        }
+        '''
     }
 
     response {
@@ -18,7 +28,8 @@ Contract.make {
         }
         body '''
         {
-            "message": "Перевод выполнен: 500 со счёта luke на счёт han"
+            "message":"Перевод выполнен: 500 со счёта lukeAcc на счёт hanAcc",
+            "resultCode":"success"
         }
         '''
     }

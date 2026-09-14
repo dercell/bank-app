@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -14,8 +15,11 @@ import ru.yandex.practicum.transfer.client.AccountClient;
 import ru.yandex.practicum.transfer.client.NotificationClient;
 import ru.yandex.practicum.transfer.config.TestSecurityConfig;
 import ru.yandex.practicum.transfer.dto.ServiceResultDto;
+import ru.yandex.practicum.transfer.dto.TransferDto;
+import wiremock.com.fasterxml.jackson.databind.ObjectMapper;
 
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -42,21 +46,19 @@ class TransferControllerIntegrationTest {
     @MockitoBean
     private NotificationClient notificationClient;
 
-    private static final String FROM_LOGIN = "luke";
-    private static final String TO_LOGIN = "han";
-    private static final int SUM = 1000;
+    private static final ObjectMapper om = new ObjectMapper();
+    private static final TransferDto TEST_BODY = TransferDto.builder().fromAcc("lukeAcc").toAcc("hanAcc").sum(BigDecimal.valueOf(1000)).build();
 
 
     @Test
     void transfer_Success() throws Exception {
         ServiceResultDto expectedResponse = new ServiceResultDto("Перевод выполнен: 1000 со счёта luke на счёт han");
-        when(accountClient.transfer(FROM_LOGIN, TO_LOGIN, SUM)).thenReturn(expectedResponse);
+        when(accountClient.transfer(any(TransferDto.class))).thenReturn(expectedResponse);
         doNothing().when(notificationClient).sendNotification(anyString());
 
         mockMvc.perform(put("/transfer/submit")
-                        .param("from", FROM_LOGIN)
-                        .param("to", TO_LOGIN)
-                        .param("sum", String.valueOf(SUM))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(TEST_BODY))
                         .with(jwt().jwt(jwt -> jwt
                                 .claim("realm_access", Map.of("roles", List.of("USER", "TRANSFER_WRITE")))
                         )))
@@ -68,22 +70,21 @@ class TransferControllerIntegrationTest {
 
     @Test
     void transfer_Error() throws Exception {
+        TransferDto badBody = TransferDto.builder().fromAcc("lukeAcc").toAcc("hanAcc").sum(BigDecimal.valueOf(-100)).build();
         mockMvc.perform(put("/transfer/submit")
-                        .param("from", FROM_LOGIN)
-                        .param("to", TO_LOGIN)
-                        .param("sum", "-100")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(badBody))
                         .with(jwt().jwt(jwt -> jwt
                                 .claim("realm_access", Map.of("roles", List.of("USER", "TRANSFER_WRITE")))
                         )))
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isBadRequest());
     }
 
     @Test
     void transfer_Forbidden() throws Exception {
         mockMvc.perform(put("/transfer/submit")
-                        .param("from", FROM_LOGIN)
-                        .param("to", TO_LOGIN)
-                        .param("sum", String.valueOf(SUM)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(TEST_BODY)))
                 .andExpect(status().isUnauthorized());
     }
 }

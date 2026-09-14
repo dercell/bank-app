@@ -27,7 +27,6 @@
         <module>cash</module>
         <module>transfer</module>
         <module>notification</module>
-        <module>gateway-service</module>
     </modules>
 
     <dependencyManagement>
@@ -56,14 +55,6 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-consul-discovery</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-consul-config</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

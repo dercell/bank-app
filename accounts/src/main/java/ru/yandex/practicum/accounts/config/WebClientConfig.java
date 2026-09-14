@@ -1,7 +1,6 @@
 package ru.yandex.practicum.accounts.config;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
@@ -17,20 +16,12 @@ public class WebClientConfig {
     private String gatewayUrl;
 
     @Bean
-    @LoadBalanced
-    public WebClient.Builder loadBalancedWebClientBuilder() {
-        return WebClient.builder();
-    }
-
-    @Bean
-    public WebClient prepareWebClient(
-            Builder loadBalancedWebClientBuilder,
-            OAuth2AuthorizedClientManager clientManager) {
+    public WebClient prepareWebClient(OAuth2AuthorizedClientManager clientManager) {
 
         var oauth2Client = new ServletOAuth2AuthorizedClientExchangeFilterFunction(clientManager);
         oauth2Client.setDefaultClientRegistrationId("keycloak");
 
-        return loadBalancedWebClientBuilder.baseUrl(gatewayUrl)
+        return WebClient.builder().baseUrl(gatewayUrl)
                 .apply(oauth2Client.oauth2Configuration())
                 .build();
     }

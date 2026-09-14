@@ -1,0 +1,41 @@
+replicaCount: 1
+
+image:
+  repository: accounts-service
+  pullPolicy: IfNotPresent
+  tag: ""
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 512Mi
+  limits:
+    cpu: 1000m
+    memory: 1024Mi
+
+startupProbe:
+  initialDelaySeconds: 20
+  failureThreshold: 10
+  httpGet:
+    path: /actuator/health
+    port: http
+livenessProbe:
+  initialDelaySeconds: 20
+  failureThreshold: 10
+  httpGet:
+    path: /actuator/health
+    port: http
+readinessProbe:
+  initialDelaySeconds: 20
+  failureThreshold: 10
+  httpGet:
+    path: /actuator/health
+    port: http
+
+#KEYCLOAK_CLIENT_ID
+#KEYCLOAK_ISSUER_URI
+#KEYCLOAK_CLIENT_SECRET
+#KEYCLOAK_TOKEN_URI
+#APP_PORT
+#BANK_API_URL
+extraEnvVars: []

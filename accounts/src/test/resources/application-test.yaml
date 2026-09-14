@@ -1,13 +1,23 @@
 spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://host.docker.internal:8080/realms/bank-app
+      client:
+        registration:
+          keycloak:
+            client-id: accounts-service
+            client-secret: z4YSPCjeXtZWb5qkwaL0YOrRGs4TP2Go
+            authorization-grant-type: client_credentials
+            scope: openid
+        provider:
+          keycloak:
+            issuer-uri: http://host.docker.internal:8080/realms/bank-app
   sql:
     init:
       mode: always
       data-locations: classpath:data.sql
-  cloud:
-    config:
-      enabled: false
-      import-check:
-        enabled: false
 
   datasource:
     url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;INIT=CREATE SCHEMA IF NOT EXISTS ACCOUNTS
@@ -33,3 +43,7 @@ spring:
 bank:
   accounts-service:
     base-url: http://localhost:8888
+
+custom:
+  baseUrl:
+    api-gateway: http://bank-api

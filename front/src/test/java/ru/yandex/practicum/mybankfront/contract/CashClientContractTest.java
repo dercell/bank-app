@@ -13,7 +13,9 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import ru.yandex.practicum.mybankfront.client.CashClient;
 import ru.yandex.practicum.mybankfront.config.ContractTestWebClientConfig;
 import ru.yandex.practicum.mybankfront.model.CashAction;
+import ru.yandex.practicum.mybankfront.model.client.CashOpDto;
 
+import java.math.BigDecimal;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -33,14 +35,16 @@ class CashClientContractTest {
 
     @Test
     void successCharge() {
-        assertDoesNotThrow(() -> cashClient.chargeSum("luke", CashAction.PUT, 5000));
+        CashOpDto body = CashOpDto.builder().action(CashAction.PUT).accNumber("lukeAcc").sum(BigDecimal.valueOf(5000)).build();
+        assertDoesNotThrow(() -> cashClient.chargeSum(body));
     }
 
     @Test
     void failCharge() {
-        WebClientResponseException wcre = assertThrows(WebClientResponseException.class, () -> cashClient.chargeSum("han", CashAction.PUT, -1000));
+        CashOpDto body = CashOpDto.builder().action(CashAction.PUT).accNumber("hanAcc").sum(BigDecimal.valueOf(-1000)).build();
+        WebClientResponseException wcre = assertThrows(WebClientResponseException.class, () -> cashClient.chargeSum(body));
         String errorMsg = wcre.getResponseBodyAs(Map.class).get("message").toString();
-        assertEquals("chargeSum.sum: must be greater than or equal to 0", errorMsg);
+        assertEquals("sum: Сумма должна быть больше 0", errorMsg);
     }
 
 }

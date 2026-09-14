@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.transfer.client.AccountClient;
 import ru.yandex.practicum.transfer.client.NotificationClient;
 import ru.yandex.practicum.transfer.dto.ServiceResultDto;
+import ru.yandex.practicum.transfer.dto.TransferDto;
 
 @Slf4j
 @Service
@@ -19,12 +20,12 @@ public class TransferService {
         this.notificationClient = notificationClient;
     }
 
-    public ServiceResultDto makeTransfer(String fromLogin, String toLogin, int sum) {
-        ServiceResultDto result = accountClient.transfer(fromLogin, toLogin, sum);
+    public ServiceResultDto makeTransfer(TransferDto body) {
+        ServiceResultDto result = accountClient.transfer(body);
         notificationClient.sendNotification("Перевод выполнен: "
-                + sum
-                + " со счёта " + fromLogin
-                + " на счёт " + toLogin);
+                + body.getSum()
+                + " со счёта " + body.getFromAcc()
+                + " на счёт " + body.getToAcc());
         return result;
     }
 }

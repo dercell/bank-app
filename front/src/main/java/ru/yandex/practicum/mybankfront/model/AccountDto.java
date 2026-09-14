@@ -3,25 +3,20 @@ package ru.yandex.practicum.mybankfront.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
-import java.time.LocalDate;
+import java.math.BigDecimal;
 
 @Getter
 @Setter
-@ToString
 @Builder
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 public class AccountDto {
 
     @JsonProperty
-    private String login;
+    private String accountNumber;
 
     @JsonProperty
-    private String username;
+    private BigDecimal balance;
 
-    @JsonProperty
-    private LocalDate birthDate;
-
-    @JsonProperty
-    private Long balance;
 }

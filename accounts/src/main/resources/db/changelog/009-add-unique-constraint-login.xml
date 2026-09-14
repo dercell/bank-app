@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="9" author="sergey.kolotev">
+        <preConditions onFail="WARN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM information_schema.table_constraints
+                WHERE table_name = 'user_profile'
+                  AND constraint_type = 'UNIQUE'
+                  AND constraint_name IN (
+                    SELECT constraint_name
+                    FROM information_schema.constraint_column_usage
+                    WHERE table_name = 'user_profile'
+                      AND column_name = 'login'
+                )
+            </sqlCheck>
+        </preConditions>
+        <addUniqueConstraint tableName="user_profile"
+                             columnNames="login"
+                             constraintName="uk_user_profile_login"/>
+        <rollback>
+            <dropUniqueConstraint tableName="user_profile"
+                                  constraintName="uk_user_profile_login"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

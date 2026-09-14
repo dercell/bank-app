@@ -7,6 +7,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import ru.yandex.practicum.mybankfront.model.ServiceResultDto;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.List;
 
@@ -20,14 +23,24 @@ public class GlobalExceptionHandler {
             Model model,
             @AuthenticationPrincipal OidcUser oidcUser
     ) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        String msg;
+        try {
+            ServiceResultDto res = objectMapper.readValue(exception.getResponseBodyAsString(), ServiceResultDto.class);
 
-        String body = exception.getResponseBodyAsString();
-        model.addAttribute("errors", List.of(body));
+            if ("AccountNotExists".equals(res.getResultCode())) {
+                return "profile";
+            } else {
+                msg = res.getMessage();
+            }
+        } catch (JacksonException ex) {
+            msg = exception.getResponseBodyAsString();
+        }
 
         if (oidcUser != null) {
             model.addAttribute("username", oidcUser.getPreferredUsername());
         }
-
+        model.addAttribute("errors", List.of(msg));
         return "main";
     }
 

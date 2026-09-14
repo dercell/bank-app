@@ -6,10 +6,15 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import ru.yandex.practicum.transfer.client.AccountClient;
 import ru.yandex.practicum.transfer.client.NotificationClient;
 import ru.yandex.practicum.transfer.dto.ServiceResultDto;
+import ru.yandex.practicum.transfer.dto.TransferDto;
 import ru.yandex.practicum.transfer.service.TransferService;
+import tools.jackson.databind.ObjectMapper;
+
+import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -29,62 +34,66 @@ class TransferServiceTest {
     @InjectMocks
     private TransferService transferService;
 
-    private static final String FROM_LOGIN = "from_user";
-    private static final String TO_LOGIN = "to_user";
-    private static final int SUM = 500;
+    private final ObjectMapper om = new ObjectMapper();
+
+
+    private static final TransferDto TEST_BODY = TransferDto.builder().fromAcc("lukeAcc").toAcc("hanAcc").sum(BigDecimal.valueOf(500)).build();
 
     @Test
     void makeTransfer_Success() {
-        ServiceResultDto expectedResponse = new ServiceResultDto("Перевод выполнен: 500 со счёта from_user на счёт to_user");
+        ServiceResultDto expectedResponse = new ServiceResultDto("500 со счёта lukeAcc на счёт hanAcc");
 
-        when(accountClient.transfer(FROM_LOGIN, TO_LOGIN, SUM)).thenReturn(expectedResponse);
+        when(accountClient.transfer(TEST_BODY)).thenReturn(expectedResponse);
 
-        ServiceResultDto result = transferService.makeTransfer(FROM_LOGIN, TO_LOGIN, SUM);
+        ServiceResultDto result = transferService.makeTransfer(TEST_BODY);
 
         assertThat(result.getMessage()).isNotNull().isEqualTo(expectedResponse.getMessage());
 
-        verify(accountClient).transfer(FROM_LOGIN, TO_LOGIN, SUM);
-        verify(notificationClient).sendNotification("Перевод выполнен: 500 со счёта from_user на счёт to_user");
+        verify(accountClient).transfer(TEST_BODY);
+        verify(notificationClient).sendNotification("Перевод выполнен: 500 со счёта lukeAcc на счёт hanAcc");
     }
 
     @Test
     void makeTransfer_InsufficientFunds_Error() {
-        when(accountClient.transfer(FROM_LOGIN, TO_LOGIN, SUM))
+        when(accountClient.transfer(TEST_BODY))
                 .thenThrow(new RuntimeException("Недостаточно средств на счету"));
 
-        assertThatThrownBy(() -> transferService.makeTransfer(FROM_LOGIN, TO_LOGIN, SUM))
+        assertThatThrownBy(() -> transferService.makeTransfer(TEST_BODY))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessage("Недостаточно средств на счету");
 
-        verify(accountClient).transfer(FROM_LOGIN, TO_LOGIN, SUM);
+        verify(accountClient).transfer(TEST_BODY);
         verify(notificationClient, never()).sendNotification(anyString());
     }
 
     @Test
     void makeTransfer_SelfTransfer_Error() {
-        when(accountClient.transfer(FROM_LOGIN, FROM_LOGIN, SUM))
-                .thenThrow(new IllegalArgumentException("Нельзя переводить деньги самому себе"));
+        ServiceResultDto errorResp = new ServiceResultDto("SelfTransferException", "Нельзя переводить на тот же самый счет");
+        WebClientResponseException we = WebClientResponseException.create(400, null, null, om.writeValueAsBytes(errorResp), null);
 
-        assertThatThrownBy(() -> transferService.makeTransfer(FROM_LOGIN, FROM_LOGIN, SUM))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Нельзя переводить деньги самому себе");
+        when(accountClient.transfer(TEST_BODY))
+                .thenThrow(we);
 
-        verify(accountClient).transfer(FROM_LOGIN, FROM_LOGIN, SUM);
+        assertThatThrownBy(() -> transferService.makeTransfer(TEST_BODY))
+                .isInstanceOf(WebClientResponseException.class);
+
+        verify(accountClient).transfer(TEST_BODY);
         verify(notificationClient, never()).sendNotification(anyString());
     }
 
     @Test
     void makeTransfer_NegativeSum_Error() {
-        int negativeSum = -100;
+        TransferDto badBody = TransferDto.builder().fromAcc("lukeAcc").toAcc("hanAcc").sum(BigDecimal.valueOf(-100)).build();
+        ServiceResultDto errorResp = new ServiceResultDto("NegativeSum", "Сумма не может быть отрицательной");
+        WebClientResponseException we = WebClientResponseException.create(400, null, null, om.writeValueAsBytes(errorResp), null);
 
-        when(accountClient.transfer(FROM_LOGIN, TO_LOGIN, negativeSum))
-                .thenThrow(new IllegalArgumentException("Сумма не может быть отрицательной"));
+        when(accountClient.transfer(badBody))
+                .thenThrow(we);
 
-        assertThatThrownBy(() -> transferService.makeTransfer(FROM_LOGIN, TO_LOGIN, negativeSum))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Сумма не может быть отрицательной");
+        assertThatThrownBy(() -> transferService.makeTransfer(badBody))
+                .isInstanceOf(WebClientResponseException.class);
 
-        verify(accountClient).transfer(FROM_LOGIN, TO_LOGIN, negativeSum);
+        verify(accountClient).transfer(any(TransferDto.class));
         verify(notificationClient, never()).sendNotification(anyString());
     }
 }

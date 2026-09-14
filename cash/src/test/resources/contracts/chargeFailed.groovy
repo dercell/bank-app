@@ -7,17 +7,28 @@ Contract.make {
 
     request {
         method 'PUT'
-        url '/cash/han?action=PUT&sum=-1000'
-    }
-
-    response {
-        status 500
+        url '/cash'
         headers {
             header 'Content-Type': 'application/json'
         }
         body '''
         {
-            "message":"chargeSum.sum: must be greater than or equal to 0"
+          "action" : "PUT",
+          "accNumber" : "hanAcc",
+          "sum" : -1000
+        }
+        '''
+    }
+
+    response {
+        status 400
+        headers {
+            header 'Content-Type': 'application/json'
+        }
+        body '''
+        {
+            "message":"sum: Сумма должна быть больше 0",
+            "resultCode":"MethodArgumentNotValidException"
         }
         '''
     }

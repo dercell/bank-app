@@ -12,7 +12,10 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import ru.yandex.practicum.cash.client.AccountClient;
 import ru.yandex.practicum.cash.config.ContractTestWebClientConfig;
+import ru.yandex.practicum.cash.dto.CashAction;
+import ru.yandex.practicum.cash.dto.CashOpDto;
 
+import java.math.BigDecimal;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -32,14 +35,19 @@ class AccountClientContractTest {
 
     @Test
     void successCharge() {
-        assertDoesNotThrow(() -> accountClient.chargeBalance("luke", "PUT", 5000));
+        CashOpDto body = CashOpDto.builder().action(CashAction.PUT).accNumber("lukeAcc").sum(BigDecimal.valueOf(5000)).build();
+        assertDoesNotThrow(() -> accountClient.chargeBalance(body));
     }
 
     @Test
     void failCharge() {
-        WebClientResponseException wcre = assertThrows(WebClientResponseException.class, () -> accountClient.chargeBalance("han", "PUT", -1000));
+
+        CashOpDto body = CashOpDto.builder().action(CashAction.PUT).accNumber("hanAcc").sum(BigDecimal.valueOf(-1000)).build();
+
+        WebClientResponseException wcre = assertThrows(WebClientResponseException.class,
+                () -> accountClient.chargeBalance(body));
         String errorMsg = wcre.getResponseBodyAs(Map.class).get("message").toString();
-        assertEquals("chargeBalance.sum: должно быть не меньше 0", errorMsg);
+        assertEquals("sum: Сумма должна быть больше 0", errorMsg);
     }
 
 }

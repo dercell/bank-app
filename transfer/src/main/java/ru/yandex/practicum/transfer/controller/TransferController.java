@@ -1,14 +1,12 @@
 package ru.yandex.practicum.transfer.controller;
 
-import jakarta.validation.constraints.Min;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.transfer.dto.ServiceResultDto;
+import ru.yandex.practicum.transfer.dto.TransferDto;
 import ru.yandex.practicum.transfer.service.TransferService;
 
 @Slf4j
@@ -17,20 +15,18 @@ import ru.yandex.practicum.transfer.service.TransferService;
 @RequestMapping(("/transfer"))
 public class TransferController {
 
-    private final TransferService transferSerivce;
+    private final TransferService transferService;
 
-    public TransferController(TransferService transferSerivce) {
-        this.transferSerivce = transferSerivce;
+    public TransferController(TransferService transferService) {
+        this.transferService = transferService;
     }
 
     @PutMapping("/submit")
     @PreAuthorize("hasRole('USER') && hasAuthority('transfer.write')")
     public ServiceResultDto transfer(
-            @RequestParam("from") String fromLogin,
-            @RequestParam("to") String toLogin,
-            @RequestParam("sum") @Min(0) int sum
+            @Valid @RequestBody TransferDto body
     ) {
-        return transferSerivce.makeTransfer(fromLogin, toLogin, sum);
+        return transferService.makeTransfer(body);
     }
 
 }

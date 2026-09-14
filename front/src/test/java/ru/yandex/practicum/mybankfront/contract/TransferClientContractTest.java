@@ -13,7 +13,10 @@ import ru.yandex.practicum.mybankfront.client.TransferClient;
 import ru.yandex.practicum.mybankfront.config.ContractTestWebClientConfig;
 
 import ru.yandex.practicum.mybankfront.model.ServiceResultDto;
+import ru.yandex.practicum.mybankfront.model.client.TransferDto;
 
+
+import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -32,11 +35,11 @@ class TransferClientContractTest {
 
     @Test
     void successTransfer() {
-
-        ServiceResultDto res = transferClient.transfer("luke", "han", 500);
+        TransferDto body = TransferDto.builder().fromAcc("lukeAcc").toAcc("hanAcc").sum(BigDecimal.valueOf(500)).build();
+        ServiceResultDto res = transferClient.transfer(body);
 
         System.out.println(res);
-        assertEquals("Перевод выполнен: 500 со счёта luke на счёт han", res.getMessage());
+        assertEquals("Перевод выполнен: 500 со счёта lukeAcc на счёт hanAcc", res.getMessage());
 
     }
 

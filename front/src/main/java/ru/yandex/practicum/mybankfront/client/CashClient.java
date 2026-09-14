@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
-import ru.yandex.practicum.mybankfront.model.CashAction;
+import ru.yandex.practicum.mybankfront.model.client.CashOpDto;
 
 @Slf4j
 @Component
@@ -16,14 +16,12 @@ public class CashClient {
         this.webClient = webClient;
     }
 
-    public void chargeSum(String login, CashAction action, int value) {
+    public void chargeSum(CashOpDto body) {
         try {
-            log.info("User {} trying to {} {} money", login, action, value);
-            webClient.put().uri(uriBuilder -> uriBuilder
-                            .path("/cash/{login}")
-                            .queryParam("action", action.toString())
-                            .queryParam("sum", value)
-                            .build(login))
+            log.info("Trying to {}", body);
+            webClient.put().uri("/cash")
+                    .bodyValue(body)
+                    .header("Content-Type", "application/json")
                     .retrieve()
                     .toBodilessEntity()
                     .block();

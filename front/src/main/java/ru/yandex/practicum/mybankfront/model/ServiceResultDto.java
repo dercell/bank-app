@@ -8,10 +8,18 @@ import lombok.*;
 @Setter
 @ToString
 @AllArgsConstructor
-@RequiredArgsConstructor
+@NoArgsConstructor
 public class ServiceResultDto {
+
+    @JsonProperty("resultCode")
+    private String resultCode;
 
     @JsonProperty("message")
     private String message;
+
+    public ServiceResultDto(String message){
+        this.resultCode = "success";
+        this.message = message;
+    }
 
 }

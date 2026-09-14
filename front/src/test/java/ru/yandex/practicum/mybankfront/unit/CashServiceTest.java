@@ -8,7 +8,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.yandex.practicum.mybankfront.client.CashClient;
 import ru.yandex.practicum.mybankfront.model.CashAction;
+import ru.yandex.practicum.mybankfront.model.client.CashOpDto;
 import ru.yandex.practicum.mybankfront.service.CashService;
+
+import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
@@ -24,16 +27,16 @@ class CashServiceTest {
     @InjectMocks
     private CashService cashService;
 
-    private static final String TEST_LOGIN = "luke";
-    private static final int TEST_VALUE = 500;
+    private static final String TEST_ACC = "lukeAcc";
+    private static final BigDecimal TEST_VALUE = BigDecimal.valueOf(500);
 
     @Test
     void editCash_Deposit_Success() {
         CashAction action = CashAction.GET;
 
-        cashService.editCash(TEST_LOGIN, action, TEST_VALUE);
+        cashService.editCash(TEST_ACC, action, TEST_VALUE);
 
-        verify(cashClient).chargeSum(TEST_LOGIN, action, TEST_VALUE);
+        verify(cashClient).chargeSum(any(CashOpDto.class));
         verifyNoMoreInteractions(cashClient);
     }
 
@@ -41,24 +44,24 @@ class CashServiceTest {
     void editCash_Withdraw_Success() {
         CashAction action = CashAction.GET;
 
-        cashService.editCash(TEST_LOGIN, action, TEST_VALUE);
+        cashService.editCash(TEST_ACC, action, TEST_VALUE);
 
-        verify(cashClient).chargeSum(TEST_LOGIN, action, TEST_VALUE);
+        verify(cashClient).chargeSum(any(CashOpDto.class));
         verifyNoMoreInteractions(cashClient);
     }
 
     @Test
     void editCash_InsufficientFunds_Error() {
         CashAction action = CashAction.GET;
-        int largeValue = 999999;
+        BigDecimal largeValue = BigDecimal.valueOf(999999);
 
         doThrow(new RuntimeException("Недостаточно средств"))
-                .when(cashClient).chargeSum(TEST_LOGIN, action, largeValue);
+                .when(cashClient).chargeSum(any(CashOpDto.class));
 
-        assertThatThrownBy(() -> cashService.editCash(TEST_LOGIN, action, largeValue))
+        assertThatThrownBy(() -> cashService.editCash(TEST_ACC, action, largeValue))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessage("Недостаточно средств");
 
-        verify(cashClient).chargeSum(TEST_LOGIN, action, largeValue);
+        verify(cashClient).chargeSum(any(CashOpDto.class));
     }
 }
