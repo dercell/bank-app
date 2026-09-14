@@ -32,10 +32,4 @@ readinessProbe:
     path: /actuator/health
     port: http
 
-#KEYCLOAK_CLIENT_ID
-#KEYCLOAK_ISSUER_URI
-#KEYCLOAK_CLIENT_SECRET
-#KEYCLOAK_TOKEN_URI
-#APP_PORT
-#BANK_API_URL
 extraEnvVars: []

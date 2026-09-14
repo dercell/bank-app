@@ -40,7 +40,32 @@ postgresql:
         init.sql: |
           CREATE SCHEMA IF NOT EXISTS keycloak;
           CREATE SCHEMA IF NOT EXISTS accounts;
+kafka:
+  image:
+    registry: docker.io
+    repository: bitnamilegacy/kafka
+  controller:
+    replicaCount: 1
+    persistence:
+      enabled: true
+      size: 4Gi
+      storageClass: "hostpath"
+    overrideConfiguration:
+      offsets.topic.replication.factor: 1
+      transaction.state.log.replication.factor: 1
+      transaction.state.log.min.isr: 1
+  broker:
+    replicaCount: 0
+  listeners:
+    client:
+      protocol: PLAINTEXT
+    controller:
+      protocol: PLAINTEXT
+    interbroker:
+      protocol: PLAINTEXT
 accounts:
+  image:
+    tag: "1.0.0"
   service:
     port: 8081
   configMap:
@@ -53,12 +78,15 @@ accounts:
       ACCOUNT_DB_URL: jdbc:postgresql://bank-app-postgresql:5432/bank_db?currentSchema=accounts
       ACCOUNT_USERNAME: bank_admin
       BANK_API_URL: http://bank-api
+      KAFKA_SERVERS: bank-app-kafka:9092
   secret:
     enabled: true
     env:
       KEYCLOAK_CLIENT_SECRET: z4YSPCjeXtZWb5qkwaL0YOrRGs4TP2Go
 
 cash:
+  image:
+    tag: "1.0.0"
   service:
     port: 8082
   configMap:
@@ -69,12 +97,15 @@ cash:
       KEYCLOAK_TOKEN_URI: http://host.docker.internal:8080/realms/bank-app/protocol/openid-connect/token
       APP_PORT: "8082"
       BANK_API_URL: http://bank-api
+      KAFKA_SERVERS: bank-app-kafka:9092
   secret:
     enabled: true
     env:
       KEYCLOAK_CLIENT_SECRET: Op9oxqitQbCeLm3sV7OykkjkNo8CmKbs
 
 transfer:
+  image:
+    tag: "1.0.0"
   service:
     port: 8085
   configMap:
@@ -85,17 +116,21 @@ transfer:
       KEYCLOAK_TOKEN_URI: http://host.docker.internal:8080/realms/bank-app/protocol/openid-connect/token
       APP_PORT: "8085"
       BANK_API_URL: http://bank-api
+      KAFKA_SERVERS: bank-app-kafka:9092
   secret:
     enabled: true
     env:
       KEYCLOAK_CLIENT_SECRET: utcIlwVUDL4ExfP0VUG6t0HKDYhGev8P
 
 notification:
+  image:
+    tag: "1.0.0"
   service:
     port: 8084
   configMap:
     enabled: true
     env:
       KEYCLOAK_ISSUER_URI: http://host.docker.internal:8080/realms/bank-app
+      KAFKA_SERVERS: bank-app-kafka:9092
   secret:
     enabled: false
