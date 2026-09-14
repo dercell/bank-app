@@ -33,15 +33,6 @@ custom:
   kafka:
     notification-topic: ${BANK_APP_NOTIFICATION_TOPIC:bank-app-notification}
 
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: "*"
-  endpoint:
-    health:
-      show-details: always
 server:
   port: ${APP_PORT:8085}
 

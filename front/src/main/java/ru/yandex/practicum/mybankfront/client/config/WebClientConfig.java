@@ -25,8 +25,11 @@ public class WebClientConfig {
     }
 
     @Bean
-    public WebClient prepareWebClient(@Value("${custom.baseUrl.api-gateway}") String baseUrl) {
-        return WebClient.builder().filter(addAccessTokenHeader()).baseUrl(baseUrl).build();
+    public WebClient prepareWebClient(
+            WebClient.Builder webClientBuilder,
+            @Value("${custom.baseUrl.api-gateway}") String baseUrl
+    ) {
+        return webClientBuilder.filter(addAccessTokenHeader()).baseUrl(baseUrl).build();
     }
 
     private ExchangeFilterFunction addAccessTokenHeader() {
