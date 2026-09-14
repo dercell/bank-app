@@ -1,4 +1,6 @@
 spring:
+  config:
+    import: "classpath:common-observability.yaml"
   profiles:
     active: prod
   application:
@@ -7,6 +9,9 @@ spring:
     bootstrap-servers: ${KAFKA_SERVERS:localhost:9092}
     listener:
       ack-mode: manual_immediate
+      observation-enabled: true
+    template:
+      observation-enabled: true
     consumer:
       group-id: bank-app-group
       auto-offset-reset: earliest
@@ -21,13 +26,5 @@ custom:
   kafka:
     notification-topic: ${BANK_APP_NOTIFICATION_TOPIC:bank-app-notification}
 
-management:
-  endpoints:
-    web:
-      exposure:
-        include: "*"
-  endpoint:
-    health:
-      show-details: always
 server:
   port: ${APP_PORT:8084}

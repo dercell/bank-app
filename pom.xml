@@ -22,12 +22,12 @@
     </properties>
 
     <modules>
+        <module>common</module>
         <module>front</module>
         <module>accounts</module>
         <module>cash</module>
         <module>transfer</module>
         <module>notification</module>
-        <module>common</module>
     </modules>
 
     <dependencyManagement>
