@@ -12,6 +12,7 @@ import org.springframework.cloud.contract.stubrunner.spring.AutoConfigureStubRun
 import org.springframework.cloud.contract.stubrunner.spring.StubRunnerProperties;
 import org.springframework.context.annotation.Import;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import ru.yandex.practicum.notification.config.ContractTriggerKafkaConfig;
@@ -24,6 +25,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 
@@ -59,7 +61,7 @@ class AccountsNotificationConsumerContractTest {
         contractTriggerKafkaTemplate.send(destination, UUID.randomUUID(), body);
 
         ArgumentCaptor<LogEntity> captor = ArgumentCaptor.forClass(LogEntity.class);
-        verify(notificationKafkaListener, timeout(5_000)).handlerNotification(captor.capture());
+        verify(notificationKafkaListener, timeout(5_000)).handlerNotification(captor.capture(), any(Acknowledgment.class));
 
         LogEntity received = captor.getValue();
         assertThat(received.getSourceService()).isEqualTo(SourceService.valueOf((String) body.get("sourceService")));

@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.listener.MessageListenerContainer;
+import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.kafka.test.utils.ContainerTestUtils;
@@ -22,6 +23,8 @@ import ru.yandex.practicum.notification.service.NotificationKafkaListener;
 import java.math.BigDecimal;
 import java.util.UUID;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static ru.yandex.practicum.notification.integration.NotificationKafkaListenerEmbeddedTest.TEST_TOPIC_NAME;
@@ -35,7 +38,7 @@ class NotificationKafkaListenerEmbeddedTest {
     public static final String TEST_TOPIC_NAME = "bank-app-notification";
 
     @Autowired
-    private KafkaTemplate<UUID, LogEntity> kafkaTemplate;
+    private KafkaTemplate<Object, Object> kafkaTemplate;
 
     @Autowired
     private EmbeddedKafkaBroker embeddedKafkaBroker;
@@ -63,7 +66,7 @@ class NotificationKafkaListenerEmbeddedTest {
         kafkaTemplate.send(TEST_TOPIC_NAME, UUID.randomUUID(), le).join();
 
         verify(notificationKafkaListener, timeout(5_000))
-                .handlerNotification(le);
+                .handlerNotification(eq(le), any(Acknowledgment.class));
 
     }
 }

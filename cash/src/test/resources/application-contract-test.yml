@@ -12,6 +12,8 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.JacksonJsonDeserializer
       properties:
         spring.json.trusted.packages: "*"
+        spring.json.use.type.headers: false
+        spring.json.value.default.type: ru.yandex.practicum.cash.dto.LogEntity
 custom:
   baseUrl:
     api-gateway: http://localhost:8888
