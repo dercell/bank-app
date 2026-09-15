@@ -79,6 +79,11 @@ accounts:
       ACCOUNT_USERNAME: bank_admin
       BANK_API_URL: http://bank-api
       KAFKA_SERVERS: bank-app-kafka:9092
+      ZIPKIN_ENDPOINT: http://bank-app-zipkin:9411/api/v2/spans
+      LOGSTASH_HOST: bank-app-logstash
+      LOGSTASH_PORT: "5000"
+  serviceMonitor:
+    enabled: true
   secret:
     enabled: true
     env:
@@ -98,6 +103,11 @@ cash:
       APP_PORT: "8082"
       BANK_API_URL: http://bank-api
       KAFKA_SERVERS: bank-app-kafka:9092
+      ZIPKIN_ENDPOINT: http://bank-app-zipkin:9411/api/v2/spans
+      LOGSTASH_HOST: bank-app-logstash
+      LOGSTASH_PORT: "5000"
+  serviceMonitor:
+    enabled: true
   secret:
     enabled: true
     env:
@@ -117,6 +127,11 @@ transfer:
       APP_PORT: "8085"
       BANK_API_URL: http://bank-api
       KAFKA_SERVERS: bank-app-kafka:9092
+      ZIPKIN_ENDPOINT: http://bank-app-zipkin:9411/api/v2/spans
+      LOGSTASH_HOST: bank-app-logstash
+      LOGSTASH_PORT: "5000"
+  serviceMonitor:
+    enabled: true
   secret:
     enabled: true
     env:
@@ -132,5 +147,77 @@ notification:
     env:
       KEYCLOAK_ISSUER_URI: http://host.docker.internal:8080/realms/bank-app
       KAFKA_SERVERS: bank-app-kafka:9092
+      ZIPKIN_ENDPOINT: http://bank-app-zipkin:9411/api/v2/spans
+      LOGSTASH_HOST: bank-app-logstash
+      LOGSTASH_PORT: "5000"
+  serviceMonitor:
+    enabled: true
   secret:
     enabled: false
+
+kube-prometheus-stack:
+  prometheus:
+    prometheusSpec:
+      serviceMonitorSelectorNilUsesHelmValues: false
+      retention: 1d
+      resources:
+        requests:
+          cpu: 100m
+          memory: 512Mi
+        limits:
+          cpu: 500m
+          memory: 1024Mi
+  alertmanager:
+    alertmanagerSpec:
+      resources:
+        requests:
+          cpu: 50m
+          memory: 128Mi
+        limits:
+          cpu: 200m
+          memory: 256Mi
+  grafana:
+    adminPassword: admin
+    persistence:
+      enabled: false
+    resources:
+      requests:
+        cpu: 50m
+        memory: 256Mi
+      limits:
+        cpu: 200m
+        memory: 512Mi
+  kubeControllerManager:
+    enabled: false
+  kubeScheduler:
+    enabled: false
+  kubeEtcd:
+    enabled: false
+  kubeProxy:
+    enabled: false
+
+elasticsearch:
+  replicaCount: 1
+  esJavaOpts: "-Xms512m -Xmx512m"
+  resources:
+    requests:
+      cpu: 250m
+      memory: 1Gi
+    limits:
+      cpu: 1000m
+      memory: 1536Mi
+  persistence:
+    enabled: true
+    size: 4Gi
+    storageClass: "hostpath"
+
+
+logstash:
+  logstashJavaOpts: "-Xmx512m -Xms512m"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 768Mi
+    limits:
+      cpu: 500m
+      memory: 768Mi
