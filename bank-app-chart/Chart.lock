@@ -17,5 +17,20 @@ dependencies:
 - name: transfer
   repository: file://charts/transfer
   version: 0.1.0
-digest: sha256:439b068319abfe84520b43cac512f56106ec04c8bdad2a7d292a46f36501ee63
-generated: "2026-09-14T12:52:49.414687+03:00"
+- name: kube-prometheus-stack
+  repository: https://prometheus-community.github.io/helm-charts
+  version: 91.3.0
+- name: elasticsearch
+  repository: file://charts/elasticsearch
+  version: 0.1.0
+- name: logstash
+  repository: file://charts/logstash-custom
+  version: 0.1.0
+- name: kibana
+  repository: file://charts/kibana
+  version: 0.1.0
+- name: zipkin
+  repository: file://charts/zipkin
+  version: 0.1.0
+digest: sha256:62b52a8afdc464e00712df4af47c0c456a9e93af481d1753b537d94294c9dfb8
+generated: "2026-09-15T13:24:27.374624+03:00"
