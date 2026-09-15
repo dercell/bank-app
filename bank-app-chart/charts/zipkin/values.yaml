@@ -1,0 +1,35 @@
+replicaCount: 1
+
+image:
+  repository: openzipkin/zipkin
+  tag: "3.6"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 9411
+
+storage:
+  type: elasticsearch
+  esHosts: "http://elasticsearch-master:9200"
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 512Mi
+  limits:
+    cpu: 500m
+    memory: 768Mi
+
+readinessProbe:
+  initialDelaySeconds: 30
+  failureThreshold: 10
+  httpGet:
+    path: /health
+    port: http
+livenessProbe:
+  initialDelaySeconds: 30
+  failureThreshold: 10
+  httpGet:
+    path: /health
+    port: http
