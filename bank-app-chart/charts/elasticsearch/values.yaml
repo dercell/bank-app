@@ -1,0 +1,42 @@
+replicaCount: 1
+
+image:
+  repository: docker.elastic.co/elasticsearch/elasticsearch
+  tag: "8.5.1"
+  pullPolicy: IfNotPresent
+
+serviceName: elasticsearch-master
+
+service:
+  type: ClusterIP
+  port: 9200
+
+esJavaOpts: "-Xms512m -Xmx512m"
+
+persistence:
+  enabled: true
+  size: 4Gi
+  storageClass: "hostpath"
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 1Gi
+  limits:
+    cpu: 1000m
+    memory: 1536Mi
+
+readinessProbe:
+  initialDelaySeconds: 40
+  periodSeconds: 10
+  failureThreshold: 20
+  httpGet:
+    path: /_cluster/health?local=true
+    port: http
+livenessProbe:
+  initialDelaySeconds: 60
+  periodSeconds: 20
+  failureThreshold: 15
+  httpGet:
+    path: /_cluster/health?local=true
+    port: http
