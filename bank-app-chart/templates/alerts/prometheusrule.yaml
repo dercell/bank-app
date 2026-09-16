@@ -1,0 +1,101 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ .Release.Name }}-bank-app-alerts
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/part-of: bank-app
+spec:
+  groups:
+    - name: bank-app.availability
+      rules:
+        - alert: BankAppServiceDown
+          expr: up{job=~".*(accounts|cash|transfer|notification).*"} == 0
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Сервис {{`{{ $labels.job }}`}} недоступен"
+            description: "Экспортёр {{`{{ $labels.job }}`}} (instance {{`{{ $labels.instance }}`}}) не отвечает на scrape уже 2 минуты (up == 0)."
+
+    - name: bank-app.http
+      rules:
+        - alert: BankAppHighHttp5xxErrorRate
+          expr: |
+            sum(rate(http_server_requests_seconds_count{status=~"5..", application=~"accounts|cash|transfer|notification"}[5m])) by (application)
+            /
+            sum(rate(http_server_requests_seconds_count{application=~"accounts|cash|transfer|notification"}[5m])) by (application)
+            > 0.05
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Высокий процент HTTP 5xx ошибок в {{`{{ $labels.application }}`}}"
+            description: "Доля запросов с ответом 5xx в сервисе {{`{{ $labels.application }}`}} превышает 5% за последние 5 минут (текущее значение: {{`{{ $value | humanizePercentage }}`}})."
+
+        - alert: BankAppHighHttpLatency
+          expr: |
+            histogram_quantile(0.95,
+              sum(rate(http_server_requests_seconds_bucket{application=~"accounts|cash|transfer|notification"}[5m])) by (le, application)
+            ) > 1
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Высокая latency HTTP в {{`{{ $labels.application }}`}}"
+            description: "95-й перцентиль времени ответа сервиса {{`{{ $labels.application }}`}} превышает 1s на протяжении 5 минут (текущее значение: {{`{{ $value }}`}}s)."
+
+    - name: bank-app.jvm
+      rules:
+        - alert: BankAppJvmHeapUsageHigh
+          expr: |
+            sum(jvm_memory_used_bytes{area="heap", application=~"accounts|cash|transfer|notification"}) by (application)
+            /
+            sum(jvm_memory_max_bytes{area="heap", application=~"accounts|cash|transfer|notification"}) by (application)
+            > 0.85
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Высокое использование JVM heap в {{`{{ $labels.application }}`}}"
+            description: "Используемая heap-память сервиса {{`{{ $labels.application }}`}} превышает 85% от максимальной на протяжении 5 минут (текущее значение: {{`{{ $value | humanizePercentage }}`}})."
+
+        - alert: BankAppJvmGcTimeHigh
+          expr: |
+            sum(rate(jvm_gc_pause_seconds_sum{application=~"accounts|cash|transfer|notification"}[5m])) by (application)
+            > 0.3
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "JVM тратит много времени на GC в {{`{{ $labels.application }}`}}"
+            description: "Доля времени, затрачиваемого на сборку мусора в сервисе {{`{{ $labels.application }}`}}, превышает 30% на протяжении 5 минут."
+
+    - name: bank-app.business
+      rules:
+        - alert: BankAppTransferErrorRateHigh
+          expr: |
+            sum(rate(bank_transfer_total{outcome="error"}[5m]))
+            /
+            sum(rate(bank_transfer_total[5m]))
+            > 0.1
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Высокий процент ошибок в операциях перевода"
+            description: "Доля неуспешных переводов (transfer) превышает 10% за последние 5 минут (текущее значение: {{`{{ $value | humanizePercentage }}`}})."
+
+        - alert: BankAppCashErrorRateHigh
+          expr: |
+            sum(rate(bank_cash_operation_total{outcome="error"}[5m]))
+            /
+            sum(rate(bank_cash_operation_total[5m]))
+            > 0.1
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Высокий процент ошибок в кассовых операциях"
+            description: "Доля неуспешных операций пополнения/снятия (cash) превышает 10% за последние 5 минут (текущее значение: {{`{{ $value | humanizePercentage }}`}})."
