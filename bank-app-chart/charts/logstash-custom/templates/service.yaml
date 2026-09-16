@@ -12,6 +12,9 @@ spec:
       port: {{ .port }}
       targetPort: {{ .targetPort }}
       protocol: {{ .protocol }}
+      {{- if .nodePort }}
+      nodePort: {{ .nodePort }}
+      {{- end }}
     {{- end }}
   selector:
     {{- include "logstash.selectorLabels" . | nindent 4 }}

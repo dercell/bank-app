@@ -70,7 +70,7 @@ kafka:
       protocol: PLAINTEXT
 accounts:
   image:
-    tag: "1.0.0"
+    tag: "1.1.4"
   service:
     port: 8081
   configMap:
@@ -96,7 +96,7 @@ accounts:
 
 cash:
   image:
-    tag: "1.0.0"
+    tag: "1.1.4"
   service:
     port: 8082
   configMap:
@@ -120,7 +120,7 @@ cash:
 
 transfer:
   image:
-    tag: "1.0.0"
+    tag: "1.1.4"
   service:
     port: 8085
   configMap:
@@ -144,7 +144,7 @@ transfer:
 
 notification:
   image:
-    tag: "1.0.0"
+    tag: "1.1.4"
   service:
     port: 8084
   configMap:
@@ -176,6 +176,13 @@ kube-prometheus-stack:
         limits:
           cpu: 500m
           memory: 1024Mi
+      additionalScrapeConfigs:
+        - job_name: 'front-external'
+          metrics_path: /actuator/prometheus
+          static_configs:
+            - targets: ['host.docker.internal:8083']
+              labels:
+                application: front
   alertmanager:
     alertmanagerSpec:
       resources:
@@ -223,10 +230,27 @@ elasticsearch:
 
 logstash:
   logstashJavaOpts: "-Xmx512m -Xms512m"
+  logstashConfig: |
+    http.host: 0.0.0.0
+    pipeline.workers: 1
+    pipeline.batch.size: 125
   resources:
     requests:
-      cpu: 100m
+      cpu: 200m
       memory: 768Mi
     limits:
-      cpu: 500m
-      memory: 768Mi
+      cpu: 1000m
+      memory: 1024Mi
+  service:
+    type: NodePort
+    ports:
+      - name: tcp-input
+        port: 5000
+        targetPort: 5000
+        protocol: TCP
+        nodePort: "30500"
+      - name: http
+        port: 9600
+        targetPort: 9600
+        protocol: TCP
+

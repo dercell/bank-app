@@ -1,6 +1,8 @@
 package ru.yandex.practicum.mybankfront.client.config;
 
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.webclient.WebClientCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -22,6 +24,13 @@ public class WebClientConfig {
 
     public WebClientConfig(OAuth2AuthorizedClientService authorizedClientService) {
         this.authorizedClientService = authorizedClientService;
+    }
+
+    @Bean
+    public WebClient.Builder webClientBuilder(ObjectProvider<WebClientCustomizer> customizerProvider) {
+        WebClient.Builder builder = WebClient.builder();
+        customizerProvider.orderedStream().forEach(customizer -> customizer.customize(builder));
+        return builder;
     }
 
     @Bean
@@ -56,3 +65,4 @@ public class WebClientConfig {
 
 
 }
+
