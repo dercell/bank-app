@@ -70,7 +70,7 @@ kafka:
       protocol: PLAINTEXT
 accounts:
   image:
-    tag: "1.1.4"
+    tag: "1.1.5"
   service:
     port: 8081
   configMap:
@@ -96,7 +96,7 @@ accounts:
 
 cash:
   image:
-    tag: "1.1.4"
+    tag: "1.1.5"
   service:
     port: 8082
   configMap:
@@ -120,7 +120,7 @@ cash:
 
 transfer:
   image:
-    tag: "1.1.4"
+    tag: "1.1.5"
   service:
     port: 8085
   configMap:
@@ -144,7 +144,7 @@ transfer:
 
 notification:
   image:
-    tag: "1.1.4"
+    tag: "1.1.5"
   service:
     port: 8084
   configMap:
@@ -180,7 +180,7 @@ kube-prometheus-stack:
         - job_name: 'front-external'
           metrics_path: /actuator/prometheus
           static_configs:
-            - targets: ['host.docker.internal:8083']
+            - targets: [ 'host.docker.internal:8083' ]
               labels:
                 application: front
   alertmanager:
@@ -203,6 +203,11 @@ kube-prometheus-stack:
       limits:
         cpu: 200m
         memory: 512Mi
+    sidecar:
+      dashboards:
+        enabled: true
+        label: grafana_dashboard
+        labelValue: "1"
   kubeControllerManager:
     enabled: false
   kubeScheduler:

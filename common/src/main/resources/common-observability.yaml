@@ -16,7 +16,9 @@ management:
     metrics:
       export:
         enabled: true
-
+  metrics:
+    tags:
+      application: ${spring.application.name}
 logstash:
   host: ${LOGSTASH_HOST:localhost}
   port: ${LOGSTASH_PORT:5000}
