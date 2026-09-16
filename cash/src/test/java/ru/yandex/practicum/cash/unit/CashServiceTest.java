@@ -1,6 +1,9 @@
 package ru.yandex.practicum.cash.unit;
 
 
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,14 +28,20 @@ class CashServiceTest {
     @Mock
     private AccountClient accountClient;
 
+    private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
+
     @Mock
     private NotificationProducer notificationProducer;
 
-    @InjectMocks
     private CashService cashService;
 
     private static final String TEST_ACC = "lukeAcc";
     private static final BigDecimal TEST_SUM = BigDecimal.valueOf(500);
+
+    @BeforeEach
+    void setUp() {
+        cashService = new CashService(accountClient, notificationProducer, meterRegistry);
+    }
 
     @Test
     void chargeSum_Deposit_Success() {

@@ -1,5 +1,8 @@
 package ru.yandex.practicum.transfer.unit;
 
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,8 +34,14 @@ class TransferServiceTest {
     @Mock
     private NotificationProducer notificationProducer;
 
-    @InjectMocks
+    private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
+
     private TransferService transferService;
+
+    @BeforeEach
+    void setUp() {
+        transferService = new TransferService(accountClient, notificationProducer, meterRegistry);
+    }
 
     private final ObjectMapper om = new ObjectMapper();
 
