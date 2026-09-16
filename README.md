@@ -151,6 +151,16 @@ custom:
 ```
 http://localhost:8083
 ```
+Так как `front` работает вне кластера k8s, для отправки трейсов в Zipkin и логов в Logstash ему нужно явно передать
+переменные окружения (адреса берутся из ingress/NodePort, см. раздел [Observability](#observability)):
+
+```bash
+export ZIPKIN_ENDPOINT=http://zipkin.bank-api:31717/api/v2/spans
+export LOGSTASH_HOST=localhost
+export LOGSTASH_PORT=30500
+
+./mvnw spring-boot:run -pl front
+```
 
 ### kafka
 
@@ -253,6 +263,112 @@ helm uninstall bank-app
 ```bash
 helm test bank-app 
 ```
+
+
+# Observability
+
+Стек мониторинга разворачивается вместе с остальными сервисами как Helm-сабчарты umbrella charts `bank-app-chart` и
+покрывает три компонента: трейсы (Zipkin), метрики (Prometheus + Grafana) и логи (ELK: Elasticsearch, Logstash, Kibana).
+
+## Компоненты
+
+| Компонент  | Назначение                                                    | Chart                                    |
+|------------|----------------------------------------------------------------|-------------------------------------------|
+| Zipkin     | Хранение и просмотр распределённых трейсов                    | `charts/zipkin`                            |
+| Prometheus | Сбор и хранение метрик (через `kube-prometheus-stack`)        | `kube-prometheus-stack` (сабчарт prometheus) |
+| Grafana    | Дашборды по метрикам                                           | `kube-prometheus-stack` (сабчарт grafana)  |
+| Alertmanager | Обработка алертов из `PrometheusRule`                        | `kube-prometheus-stack` (сабчарт alertmanager) |
+| Elasticsearch | Хранилище логов                                             | `charts/elasticsearch`                     |
+| Logstash   | Приём логов и запись в Elasticsearch | `charts/logstash-custom`                   |
+| Kibana     | Просмотр и поиск логов                                        | `charts/kibana`                            |
+
+Каждый сервис (`accounts`, `cash`, `transfer`, `notification`, `front`) подключает общий модуль `common`, который:
+
+- настраивает трейсинг через Micrometer Tracing + Brave и отправляет спаны в Zipkin
+  (`management.tracing.export.zipkin.endpoint`);
+- экспортирует метрики в формате Prometheus на `/actuator/prometheus`;
+- отправляет структурированные JSON-логи в Logstash.
+
+## Запуск
+
+Все компоненты observability входят в umbrella chart `bank-app-chart` и поднимаются вместе с приложением:
+
+```bash
+cd bank-app-chart
+helm dependency update
+helm upgrade --install bank-app . --namespace bank-ns --create-namespace
+```
+
+Проверить, что поды стека наблюдаемости поднялись:
+
+```bash
+kubectl get pods -n bank-ns | grep -E "zipkin|prometheus|grafana|alertmanager|elasticsearch|logstash|kibana"
+```
+
+## Доступ через UI
+
+Доступ ко всем UI даётся через тот же ingress-controller, что и к API (`http://bank-api:<nodePort>`), по отдельным
+хостам, объявленным в `values.yaml -> ingress.observability`:
+
+| UI         | Host (пример)          | Логин/пароль          |
+|------------|-------------------------|------------------------|
+| Zipkin     | `http://zipkin.bank-api:31717`     | —                      |
+| Prometheus | `http://prometheus.bank-api:31717` | —                      |
+| Grafana    | `http://grafana.bank-api:31717`    | `admin` / `admin` (см. `kube-prometheus-stack.grafana.adminPassword`) |
+| Kibana     | `http://kibana.bank-api:31717`     | —                      |
+
+Для резолва этих хостов локально добавьте их в `/etc/hosts`, указав на IP ноды/кластера:
+
+```
+127.0.0.1 bank-api zipkin.bank-api prometheus.bank-api grafana.bank-api kibana.bank-api
+```
+
+(порт `31717` — это NodePort `ingress-nginx-controller`, см. раздел про запуск `front`; в вашем окружении он может
+отличаться).
+
+## Дашборды Grafana
+
+Дашборды заведены как ConfigMap с лейблом `grafana_dashboard: "1"` (`bank-app-chart/dashboards/*.json`,
+шаблон `templates/dashboards/configmaps.yaml`) и автоматически подхватываются sidecar-контейнером Grafana
+(`kube-prometheus-stack.grafana.sidecar.dashboards.enabled: true`). После деплоя они появляются в Grafana автоматически:
+
+- **Bank App / JVM (Micrometer) & Business Metrics** — адаптированный community-дашборд
+  [4701 "JVM (Micrometer)"](https://grafana.com/grafana/dashboards/4701-jvm-micrometer/) (память heap/non-heap, GC,
+  CPU, threads, classloading, buffer pools, HTTP I/O overview) с добавленным рядом панелей "Bank App Business Metrics
+  (Transfer & Cash)" — количество и длительность операций перевода и кассовых операций по исходу
+  (`success`/`error`), error ratio;
+- **Bank App / Spring Boot HTTP & Kafka** — RPS, 5xx error rate, latency (p50/p95/p99) в разрезе `uri`, Kafka
+  producer/consumer rate.
+
+Оба дашборда используют переменную `$application`, поэтому каждая метрика во всех сервисах помечается общим тегом
+`application=${spring.application.name}` (настроено в `common/src/main/resources/common-observability.yaml` через
+`management.metrics.tags.application`) — без этого тега часть панелей была бы пустой.
+
+## Бизнес-метрики
+
+`transfer` и `cash` публикуют собственные метрики через `MeterRegistry` (видны на `/actuator/prometheus`):
+
+- `bank_transfer_total{outcome=...}` — счётчик операций перевода (успех/ошибка);
+- `bank_transfer_duration_seconds{outcome=...}` — таймер длительности перевода;
+- `bank_transfer_amount` — сумма переводов (DistributionSummary);
+- `bank_cash_operation_total{action=GET|PUT, outcome=...}` — счётчик кассовых операций (снятие/пополнение, успех/ошибка);
+- `bank_cash_operation_duration_seconds{action=..., outcome=...}` — таймер длительности кассовой операции;
+- `bank_cash_amount{action=...}` — сумма кассовых операций.
+
+## Алерты Prometheus
+
+Алерты заведены как `PrometheusRule` (`templates/alerts/prometheusrule.yaml`) и обрабатываются Alertmanager:
+
+| Alert                         | Условие                                                             | Severity |
+|--------------------------------|----------------------------------------------------------------------|----------|
+| `BankAppServiceDown`           | `up == 0` дольше 2 минут для accounts/cash/transfer/notification     | critical |
+| `BankAppHighHttp5xxErrorRate`  | доля HTTP 5xx > 5% за 5 минут                                        | critical |
+| `BankAppHighHttpLatency`       | p95 времени ответа > 1s за 5 минут                                   | warning  |
+| `BankAppJvmHeapUsageHigh`      | используемый heap > 85% от максимума за 5 минут                      | warning  |
+| `BankAppJvmGcTimeHigh`         | время в GC > 30% за 5 минут                                          | warning  |
+| `BankAppTransferErrorRateHigh` | доля ошибочных переводов > 10% за 5 минут                            | critical |
+| `BankAppCashErrorRateHigh`     | доля ошибочных кассовых операций > 10% за 5 минут                    | critical |
+
 
 # Контрактные тесты
 
