@@ -1,20 +1,9 @@
 spring:
   application:
     name: ${APP_NAME:front-app}
-  security:
-    oauth2:
-      client:
-        registration:
-          keycloak:
-            client-id: ${KEYCLOAK_CLIENT_ID:front-app}
-            authorization-grant-type: authorization_code
-            scope: openid, profile
-            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
-            provider: keycloak
-        provider:
-          keycloak:
-            user-name-attribute: preferred_username
-            issuer-uri: ${KEYCLOAK_ISSUER_URI:http://host.docker.internal:8080/realms/bank-app}
+  profiles:
+    active: prod
+
 server:
   port: ${FRONT_APP_PORT:8083}
 
@@ -30,3 +19,23 @@ management:
 custom:
   baseUrl:
     api-gateway: ${GATEWAY_API:http://bank-api:31717}
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+  security:
+    oauth2:
+      client:
+        registration:
+          keycloak:
+            client-id: ${KEYCLOAK_CLIENT_ID:front-app}
+            authorization-grant-type: authorization_code
+            scope: openid, profile
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            provider: keycloak
+        provider:
+          keycloak:
+            user-name-attribute: preferred_username
+            issuer-uri: ${KEYCLOAK_ISSUER_URI:http://host.docker.internal:8080/realms/bank-app}

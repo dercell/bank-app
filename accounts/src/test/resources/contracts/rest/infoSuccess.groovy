@@ -1,14 +1,13 @@
-package contracts
-
+package contracts.rest
 
 import org.springframework.cloud.contract.spec.Contract
 
 Contract.make {
-    description "Обновляет профиль Люка Скайуокера"
+    description "Получение данных Люка Скайуокера"
 
     request {
-        method 'PUT'
-        url '/accounts/info/luke?username=Luke%20Starkiller&birthdate=1970-01-15'
+        method 'GET'
+        url '/accounts/info/luke'
     }
 
     response {
@@ -20,8 +19,8 @@ Contract.make {
         {
             "userProfileDto":{
                 "login":"luke",
-                "username":"Luke Starkiller",
-                "birthDate":"1970-01-15"
+                "username":"Luke Skywalker",
+                "birthDate":"1990-01-15"
             },
             "curAccounts":[
                 {"accountNumber":"qwe","balance":200}

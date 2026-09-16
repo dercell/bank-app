@@ -9,7 +9,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 
 @TestConfiguration
-@Profile("contract-test")
+@Profile({"test", "contract-test"})
 public class ContractTestWebClientConfig {
 
     @Value("${custom.baseUrl.api-gateway}")

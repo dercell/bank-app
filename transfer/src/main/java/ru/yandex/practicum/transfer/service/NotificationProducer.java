@@ -1,0 +1,45 @@
+package ru.yandex.practicum.transfer.service;
+
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.stereotype.Service;
+import ru.yandex.practicum.transfer.dto.LogEntity;
+import ru.yandex.practicum.transfer.dto.SourceService;
+
+
+import java.util.UUID;
+
+@Slf4j
+@Service
+public class NotificationProducer {
+
+    private KafkaTemplate<UUID, LogEntity> kafkaTemplate;
+
+    @Value("${custom.kafka.notification-topic}")
+    private String TOPIC_NAME;
+
+    public NotificationProducer(KafkaTemplate<UUID, LogEntity> kafkaTemplate) {
+        this.kafkaTemplate = kafkaTemplate;
+    }
+
+    public void sendNotification(String message) {
+
+        UUID msgKey = UUID.randomUUID();
+        log.info("Send message to kafka from Transfer: {}", message);
+        LogEntity le = new LogEntity();
+        le.setSourceService(SourceService.TRANSFER);
+        le.setMessage(message);
+
+        kafkaTemplate.send(TOPIC_NAME, msgKey, le).whenComplete((result, ex) -> {
+            if (ex != null) {
+                log.error("Failed to send {} with key {} to topic {}", le, msgKey, TOPIC_NAME, ex);
+            } else {
+                log.info("Sent {} with key {} to topic {}, offset={}",
+                        le, msgKey, TOPIC_NAME, result.getRecordMetadata().offset());
+            }
+        });
+        log.info("Message send");
+    }
+
+}

@@ -3,11 +3,23 @@ spring:
     active: prod
   application:
     name: notification
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri:  ${KEYCLOAK_ISSUER_URI:http://host.docker.internal:8080/realms/bank-app}
+  kafka:
+    bootstrap-servers: ${KAFKA_SERVERS:localhost:9092}
+    listener:
+      ack-mode: manual_immediate
+    consumer:
+      group-id: bank-app-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.UUIDDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JacksonJsonDeserializer
+      properties:
+        spring.json.use.type.headers: false
+        spring.json.value.default.type: ru.yandex.practicum.notification.model.LogEntity
+        spring.json.trusted.packages: ru.yandex.practicum.notification.model
+
+custom:
+  kafka:
+    notification-topic: ${BANK_APP_NOTIFICATION_TOPIC:bank-app-notification}
 
 management:
   endpoints:

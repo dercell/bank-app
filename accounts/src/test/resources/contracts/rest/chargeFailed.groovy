@@ -1,4 +1,4 @@
-package contracts
+package contracts.rest
 
 import org.springframework.cloud.contract.spec.Contract
 
@@ -7,7 +7,7 @@ Contract.make {
 
     request {
         method 'PUT'
-        url '/cash'
+        url '/accounts/charge'
         headers {
             header 'Content-Type': 'application/json'
         }

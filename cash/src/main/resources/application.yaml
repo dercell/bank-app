@@ -3,25 +3,30 @@ spring:
     active: prod
   application:
     name: cash
+  kafka:
+    bootstrap-servers: ${KAFKA_SERVERS:localhost:9092}
+    producer:
+      acks: all
+      retries: 2147483647
+      key-serializer: org.apache.kafka.common.serialization.UUIDSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JacksonJsonSerializer
+      properties:
+        enable.idempotence: true
+        delivery.timeout.ms: 120000
+        request.timeout.ms: 30000
+        spring.json.add.type.headers: false
+        spring.json.trusted.packages: ru.yandex.practicum.cash.model
   security:
     oauth2:
       resourceserver:
         jwt:
           issuer-uri: ${KEYCLOAK_ISSUER_URI:http://host.docker.internal:8080/realms/bank-app}
-      client:
-        registration:
-          keycloak:
-            provider: keycloak
-            client-id: ${KEYCLOAK_CLIENT_ID:cash-service}
-            client-secret: ${KEYCLOAK_CLIENT_SECRET:Op9oxqitQbCeLm3sV7OykkjkNo8CmKbs}
-            authorization-grant-type: client_credentials
-        provider:
-          keycloak:
-            issuer-uri: ${KEYCLOAK_ISSUER_URI:http://host.docker.internal:8080/realms/bank-app}
 
 custom:
   baseUrl:
     api-gateway: ${BANK_API_URL:http://localhost:8081}
+  kafka:
+    notification-topic: ${BANK_APP_NOTIFICATION_TOPIC:bank-app-notification}
 
 management:
   endpoints:
@@ -33,3 +38,21 @@ management:
       show-details: always
 server:
   port: ${APP_PORT:8082}
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+  security:
+    oauth2:
+      client:
+        registration:
+          keycloak:
+            provider: keycloak
+            client-id: ${KEYCLOAK_CLIENT_ID:cash-service}
+            client-secret: ${KEYCLOAK_CLIENT_SECRET:Op9oxqitQbCeLm3sV7OykkjkNo8CmKbs}
+            authorization-grant-type: client_credentials
+        provider:
+          keycloak:
+            issuer-uri: ${KEYCLOAK_ISSUER_URI:http://host.docker.internal:8080/realms/bank-app}

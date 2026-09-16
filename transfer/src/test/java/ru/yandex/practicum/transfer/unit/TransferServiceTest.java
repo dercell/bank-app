@@ -8,9 +8,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import ru.yandex.practicum.transfer.client.AccountClient;
-import ru.yandex.practicum.transfer.client.NotificationClient;
 import ru.yandex.practicum.transfer.dto.ServiceResultDto;
 import ru.yandex.practicum.transfer.dto.TransferDto;
+import ru.yandex.practicum.transfer.service.NotificationProducer;
 import ru.yandex.practicum.transfer.service.TransferService;
 import tools.jackson.databind.ObjectMapper;
 
@@ -29,7 +29,7 @@ class TransferServiceTest {
     private AccountClient accountClient;
 
     @Mock
-    private NotificationClient notificationClient;
+    private NotificationProducer notificationProducer;
 
     @InjectMocks
     private TransferService transferService;
@@ -50,7 +50,7 @@ class TransferServiceTest {
         assertThat(result.getMessage()).isNotNull().isEqualTo(expectedResponse.getMessage());
 
         verify(accountClient).transfer(TEST_BODY);
-        verify(notificationClient).sendNotification("Перевод выполнен: 500 со счёта lukeAcc на счёт hanAcc");
+        verify(notificationProducer).sendNotification("Перевод выполнен: 500,00 со счёта lukeAcc на счёт hanAcc");
     }
 
     @Test
@@ -63,7 +63,7 @@ class TransferServiceTest {
                 .hasMessage("Недостаточно средств на счету");
 
         verify(accountClient).transfer(TEST_BODY);
-        verify(notificationClient, never()).sendNotification(anyString());
+        verify(notificationProducer, never()).sendNotification(anyString());
     }
 
     @Test
@@ -78,7 +78,7 @@ class TransferServiceTest {
                 .isInstanceOf(WebClientResponseException.class);
 
         verify(accountClient).transfer(TEST_BODY);
-        verify(notificationClient, never()).sendNotification(anyString());
+        verify(notificationProducer, never()).sendNotification(anyString());
     }
 
     @Test
@@ -94,6 +94,6 @@ class TransferServiceTest {
                 .isInstanceOf(WebClientResponseException.class);
 
         verify(accountClient).transfer(any(TransferDto.class));
-        verify(notificationClient, never()).sendNotification(anyString());
+        verify(notificationProducer, never()).sendNotification(anyString());
     }
 }

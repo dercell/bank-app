@@ -9,26 +9,27 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import ru.yandex.practicum.cash.client.NotificationClient;
+import ru.yandex.practicum.cash.CashApplication;
 import ru.yandex.practicum.cash.config.ContractTestSecurityConfig;
-import ru.yandex.practicum.cash.dto.CashAction;
+import ru.yandex.practicum.cash.config.ContractTestWebClientConfig;
 import ru.yandex.practicum.cash.dto.CashOpDto;
 import ru.yandex.practicum.cash.service.CashService;
+import ru.yandex.practicum.cash.service.NotificationProducer;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doNothing;
 
-@SpringBootTest
+@SpringBootTest(classes = CashApplication.class)
 @AutoConfigureMockMvc
 @ActiveProfiles("contract-test")
-@Import(ContractTestSecurityConfig.class)
+@Import({ContractTestSecurityConfig.class, ContractTestWebClientConfig.class})
 public abstract class BaseCashContractTest {
 
     @Autowired
     protected MockMvc mockMvc;
 
     @MockitoBean
-    private NotificationClient notificationClient;
+    private NotificationProducer notificationProducer;
 
     @MockitoBean
     private CashService cashService;
@@ -37,7 +38,7 @@ public abstract class BaseCashContractTest {
     @BeforeEach
     public void setup() {
         RestAssuredMockMvc.mockMvc(mockMvc);
-        doNothing().when(notificationClient).sendNotification(anyString());
+        doNothing().when(notificationProducer).sendNotification(anyString());
         doNothing().when(cashService).chargeSum(any(CashOpDto.class));
     }
 

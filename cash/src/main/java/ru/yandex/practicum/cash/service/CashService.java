@@ -2,7 +2,6 @@ package ru.yandex.practicum.cash.service;
 
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.cash.client.AccountClient;
-import ru.yandex.practicum.cash.client.NotificationClient;
 import ru.yandex.practicum.cash.dto.CashOpDto;
 import ru.yandex.practicum.cash.exceptions.InvalidCashAction;
 
@@ -10,11 +9,11 @@ import ru.yandex.practicum.cash.exceptions.InvalidCashAction;
 public class CashService {
 
     private final AccountClient accountClient;
-    private final NotificationClient notificationClient;
+    private final NotificationProducer notificationProducer;
 
-    public CashService(AccountClient accountClient, NotificationClient notificationClient) {
+    public CashService(AccountClient accountClient, NotificationProducer notificationProducer) {
         this.accountClient = accountClient;
-        this.notificationClient = notificationClient;
+        this.notificationProducer = notificationProducer;
     }
 
     public void chargeSum(CashOpDto body) {
@@ -26,6 +25,6 @@ public class CashService {
         }
 
         accountClient.chargeBalance(body);
-        notificationClient.sendNotification(msg);
+        notificationProducer.sendNotification(msg);
     }
 }

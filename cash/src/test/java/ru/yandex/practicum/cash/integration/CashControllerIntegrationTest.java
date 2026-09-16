@@ -11,10 +11,10 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.yandex.practicum.cash.client.AccountClient;
-import ru.yandex.practicum.cash.client.NotificationClient;
 import ru.yandex.practicum.cash.config.TestSecurityConfig;
 import ru.yandex.practicum.cash.dto.CashAction;
 import ru.yandex.practicum.cash.dto.CashOpDto;
+import ru.yandex.practicum.cash.service.NotificationProducer;
 import tools.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
@@ -40,7 +40,7 @@ class CashControllerIntegrationTest {
     private AccountClient accountClient;
 
     @MockitoBean
-    private NotificationClient notificationClient;
+    private NotificationProducer notificationProducer;
 
     private static final ObjectMapper om = new ObjectMapper();
     private static final CashOpDto TEST_BODY = CashOpDto.builder()

@@ -8,7 +8,6 @@
 - вызовы между микросервисами через Client Credentials Flow;
 - разделение ответственности между следующими сервисами:
     - front
-    - gateway
     - transfer
     - cash
     - accounts
@@ -51,9 +50,14 @@
 
 ### notification
 
-- Принимает запросы с service-token.
-- Проверяет роли (`SERVICE`, `notification.write`).
+- Читает сообщения из топика bank-app-notification Kafka
 - Выводит событие приложения в консоль
+
+### kafka
+
+- Осуществляет взаимодействие сервисов accounts, transfer и cash с сервисом notification через топик
+  bank-app-notification
+- Реализует стратегию at-least-once
 
 ### keycloak
 
@@ -113,8 +117,9 @@ http://localhost:8080
 ./mvnw spring-boot:run -pl front
 ```
 
-Фронт запускается отдельно от кластера k8s, а для связи с микросервисами используется единая точка входа - ingress. Для работы в ingress необходимо настроить ingress-controller (в нашем случае это nginx-controller)
-Выполните 
+Фронт запускается отдельно от кластера k8s, а для связи с микросервисами используется единая точка входа - ingress. Для
+работы в ingress необходимо настроить ingress-controller (в нашем случае это nginx-controller)
+Выполните
 
 ```bash
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
@@ -124,7 +129,8 @@ helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
   --create-namespace
 ```
 
-Далее находим внешний порт nginx-controller 
+Далее находим внешний порт nginx-controller
+
 ```bash
 kubectl get svc -n ingress-nginx                     
 
@@ -146,7 +152,10 @@ custom:
 http://localhost:8083
 ```
 
+### kafka
 
+Топик для реализации механизма уведомлений имеет дефолтное значени `bank-app-notification`, но может быть изменен. Для
+этого необходимо в каждом определить переменную окружения `BANK_APP_NOTIFICATION_TOPIC` 
 
 ---
 
@@ -166,25 +175,25 @@ helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 ### accounts
 
 ```bash
-docker build -f accounts/Dockerfile -t accounts-service:0.1.0 .
+docker build -f accounts/Dockerfile -t accounts-service:1.0.0 .
 ```
 
 ### transfer
 
 ```bash
-docker build -f transfer/Dockerfile -t transfer-service:0.1.0 .
+docker build -f transfer/Dockerfile -t transfer-service:1.0.0 .
 ```
 
 ### cash
 
 ```bash
-docker build -f cash/Dockerfile -t cash-service:0.1.0 .
+docker build -f cash/Dockerfile -t cash-service:1.0.0 .
 ```
 
 ### notification
 
 ```bash
-docker build -f notification/Dockerfile -t notification-service:0.1.0 .
+docker build -f notification/Dockerfile -t notification-service:1.0.0 .
 ```
 
 ### PostgreSQL
@@ -254,10 +263,20 @@ helm test bank-app
 - **accounts** (провайдер API) и **front** (клиент этого API)
 - **cash** (провайдер API) и **front** (клиент этого API)
 - **transfer** (провайдер API) и **front** (клиент этого API)
+- **accounts** (продьюсер kafka) и **notification** (консьюмер kafka)
+- **cash** (продьюсер kafka) и **notification** (консьюмер kafka)
+- **transfer** (продьюсер kafka) и **notification** (консьюмер kafka)
 
 ## Продюсеры: accounts, transfer и cash
 
-Для сервисов `accounts`, `transfer` и `cash` контракты описаны в `src/test/resources/contracts`.
+Для сервисов `accounts`, `transfer` и `cash` контракты описаны 
+
+#### Rest contracts
+`src/test/resources/contracts/rest/`
+
+#### Messaging contracts
+`src/test/resources/contracts/messaging/`
+
 
 При сборке модулей `accounts`, `transfer` и `cash`:
 
@@ -279,7 +298,9 @@ Spring Cloud Contract:
 
 Этот jar со стабами необходимо выложить в Maven‑репозиторий.
 
-## Консьюмеры: transfer, cash, front
+## Консьюмеры: transfer, cash, front, notification
+
+#### Rest contracts
 
 В модулья-консьюмерах находятся классы для проверки клиентов:
 
@@ -293,6 +314,11 @@ Spring Cloud Contract:
 
 Важно: чтобы этот тест прошёл, jar со стабами должны быть доступну в локальном Maven‑репозитории, откуда его заберёт
 Stub Runner.
+
+#### Messaging contracts
+
+Контрактные тесты консьюмера Kafka расположены в модуле `notification` в пакете
+`ru.yandex.practicum.notification.contract.*`
 
 ## Как запустить тесты
 
