@@ -70,7 +70,7 @@ kafka:
       protocol: PLAINTEXT
 accounts:
   image:
-    tag: "1.1.5"
+    tag: "1.1.6"
   service:
     port: 8081
   configMap:
@@ -96,7 +96,7 @@ accounts:
 
 cash:
   image:
-    tag: "1.1.5"
+    tag: "1.1.6"
   service:
     port: 8082
   configMap:
@@ -120,7 +120,7 @@ cash:
 
 transfer:
   image:
-    tag: "1.1.5"
+    tag: "1.1.6"
   service:
     port: 8085
   configMap:
@@ -144,7 +144,7 @@ transfer:
 
 notification:
   image:
-    tag: "1.1.5"
+    tag: "1.1.6"
   service:
     port: 8084
   configMap:
