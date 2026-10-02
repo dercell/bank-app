@@ -1,6 +1,8 @@
 package ru.yandex.practicum.mybankfront.client.config;
 
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.webclient.WebClientCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -25,8 +27,18 @@ public class WebClientConfig {
     }
 
     @Bean
-    public WebClient prepareWebClient(@Value("${custom.baseUrl.api-gateway}") String baseUrl) {
-        return WebClient.builder().filter(addAccessTokenHeader()).baseUrl(baseUrl).build();
+    public WebClient.Builder webClientBuilder(ObjectProvider<WebClientCustomizer> customizerProvider) {
+        WebClient.Builder builder = WebClient.builder();
+        customizerProvider.orderedStream().forEach(customizer -> customizer.customize(builder));
+        return builder;
+    }
+
+    @Bean
+    public WebClient prepareWebClient(
+            WebClient.Builder webClientBuilder,
+            @Value("${custom.baseUrl.api-gateway}") String baseUrl
+    ) {
+        return webClientBuilder.filter(addAccessTokenHeader()).baseUrl(baseUrl).build();
     }
 
     private ExchangeFilterFunction addAccessTokenHeader() {
@@ -53,3 +65,4 @@ public class WebClientConfig {
 
 
 }
+

@@ -1,0 +1,60 @@
+replicaCount: 1
+
+image:
+  repository: docker.elastic.co/logstash/logstash
+  tag: "8.5.1"
+  pullPolicy: IfNotPresent
+
+serviceName: bank-app-logstash
+
+logstashJavaOpts: "-Xmx512m -Xms512m"
+
+service:
+  type: ClusterIP
+  ports:
+    - name: tcp-input
+      port: 5000
+      targetPort: 5000
+      protocol: TCP
+    - name: http
+      port: 9600
+      targetPort: 9600
+      protocol: TCP
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 768Mi
+  limits:
+    cpu: 500m
+    memory: 768Mi
+
+logstashConfig: |
+  http.host: 0.0.0.0
+
+logstashPipeline: |
+  input {
+    tcp {
+      port => 5000
+      codec => json_lines
+    }
+  }
+  output {
+    elasticsearch {
+      hosts => ["http://elasticsearch-master:9200"]
+      index => "bank-app-logs-%{+YYYY.MM.dd}"
+    }
+  }
+
+readinessProbe:
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  failureThreshold: 15
+  tcpSocket:
+    port: 9600
+livenessProbe:
+  initialDelaySeconds: 60
+  periodSeconds: 20
+  failureThreshold: 10
+  tcpSocket:
+    port: 9600

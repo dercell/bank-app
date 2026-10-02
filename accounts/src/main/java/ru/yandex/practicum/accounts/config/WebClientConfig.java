@@ -1,6 +1,8 @@
 package ru.yandex.practicum.accounts.config;
 
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.webclient.WebClientCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -8,6 +10,7 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClient.Builder;
+
 
 
 @Configuration
@@ -18,14 +21,22 @@ public class WebClientConfig {
     private String gatewayUrl;
 
     @Bean
-    public WebClient prepareWebClient(OAuth2AuthorizedClientManager clientManager) {
+    public Builder webClientBuilder(ObjectProvider<WebClientCustomizer> customizerProvider) {
+        Builder builder = WebClient.builder();
+        customizerProvider.orderedStream().forEach(customizer -> customizer.customize(builder));
+        return builder;
+    }
+
+    @Bean
+    public WebClient prepareWebClient(Builder webClientBuilder, OAuth2AuthorizedClientManager clientManager) {
 
         var oauth2Client = new ServletOAuth2AuthorizedClientExchangeFilterFunction(clientManager);
         oauth2Client.setDefaultClientRegistrationId("keycloak");
 
-        return WebClient.builder().baseUrl(gatewayUrl)
+        return webClientBuilder.baseUrl(gatewayUrl)
                 .apply(oauth2Client.oauth2Configuration())
                 .build();
     }
 
 }
+

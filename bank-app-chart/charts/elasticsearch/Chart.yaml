@@ -1,0 +1,7 @@
+apiVersion: v2
+name: elasticsearch
+description: Elasticsearch custom chart
+type: application
+version: 0.1.0
+
+appVersion: "8.5.1"

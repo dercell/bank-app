@@ -1,4 +1,6 @@
 spring:
+  config:
+    import: "classpath:common-observability.yaml"
   application:
     name: ${APP_NAME:front-app}
   profiles:
@@ -11,7 +13,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health, info, refresh
+        include: health, info, refresh, prometheus
   endpoint:
     health:
       show-details: always
